@@ -241,6 +241,7 @@ class Engine:
         part = 1 / (self.processes_amount - 1)
         state = ""
         print(f"self.processes_amount: {self.processes_amount}")
+        print(f"len(probs): {len(probs)}")
         for dest_proc in range(1, self.processes_amount):
             message_list = probs[int((dest_proc - 1) * probs_amnt * part): int(dest_proc * probs_amnt * part)]
             message = me.Message(

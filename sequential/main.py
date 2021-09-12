@@ -89,13 +89,16 @@ class Solver:
         return self.tasks_q.qsize()
 
     def initialize_amount(self):
-        return 5
+        return 15
 
     def initialize_weight(self):
-        return 10
+        return 15
 
     def initialize_items(self):
-        return [Item(2, 40), Item(3.1, 50), Item(1.98, 100), Item(5, 95), Item(3, 30)]
+        return [Item(2, 40), Item(3.1, 50), Item(1.98, 100), Item(5, 95), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30)]
+    #
+    # def initialize_items(self):
+    #     return [Item(2, 40), Item(3.1, 50), Item(1.98, 100), Item(5, 95), Item(3, 30)]
 
     def cmp(self, i1: Item, i2: Item):
         return i1.value / i1.weight > i2.value / i2.weight
@@ -145,6 +148,7 @@ class Solver:
         if n > 0:
             while n > 0 and not self.tasks_q.empty():
                 self.ramify(self.tasks_q.get())
+                n -= 1
         else:
             while not self.tasks_q.empty():
                 self.ramify(self.tasks_q.get())
