@@ -5,7 +5,6 @@ from mpi4py import MPI
 class SimpleCommunicator:
 
     def send(self, receiver, message: me.Message, comm):
-        # print(f"receiver: {receiver}")
         comm.send(me.pack(message), dest=receiver)
         return "sent_" + message.message_type, []
 
