@@ -1,3 +1,5 @@
+import time
+
 from mpi4py import MPI
 import balancer.SimpleBalancer as sb
 import sequential.main as sl
@@ -70,7 +72,7 @@ class Engine:
                                                      subs_amount=self.solver.get_sub_amount(),
                                                      add_args=[[], self.isSentRequest, self.rank])
             if command == "start" or command == "receive":
-                receive_status, message = self.communicator.receive(comm)
+                receive_status, message, sender = self.communicator.receive(comm)
                 if receive_status != "received_exit_command":
                     if receive_status == "received_subproblems":
                         self.solver.putSubproblems(message.payload)
