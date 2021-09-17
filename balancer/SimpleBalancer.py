@@ -34,7 +34,7 @@ class MasterBalancer(SimpleBalancer):
     def balance(self, state, subs_amount, add_args=None):
         self.state = state
         if self.state == "starting":
-            return "solve", [self.proc_am]
+            return "solve", [self.proc_am * 2]
         if self.state == "solved":
             return "send_all", [[-1], [-1]]
         if self.state == "sent_subproblems":

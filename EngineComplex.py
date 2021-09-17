@@ -141,7 +141,9 @@ class Engine:
                 break
         profit = self.comm.reduce(self.solver.max_profit, MPI.MAX, root=0)
         if self.rank == 0:
-            print(f"maximum profit: {profit}")
+            print(f"maximum profit  : {profit}")
+            max_time = self.route_collector.frame['timestamp0'][-1]
+            print(f"maximum time    : {max_time}")
         traces = self.comm.gather(self.route_collector.frame, root=0)
         if self.rank == 0:
             res = {}

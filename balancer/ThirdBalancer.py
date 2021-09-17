@@ -48,7 +48,7 @@ class MasterBalancer(sb.SimpleBalancer):
 
 class SlaveBalancer(sb.SimpleBalancer):
 
-    def __init__(self, state, max_depth, proc_am, prc_blnc, alive_proc_am=0, T=5, S=5, m=0, M=0, arg=5):
+    def __init__(self, state, max_depth, proc_am, prc_blnc, alive_proc_am=0, T=10, S=5, m=0, M=0, arg=5):
         super().__init__(state, max_depth, proc_am, prc_blnc)
         self.alive_proc_am = alive_proc_am
         self.T = T
@@ -66,7 +66,7 @@ class SlaveBalancer(sb.SimpleBalancer):
                     and isinstance(add_args[0], list):
                 isSentGR = add_args[1]
                 if not isSentGR:
-                    return "send_get_request", [0, 3]
+                    return "send_get_request", [0, self.S]
                 else:
                     raise Exception(f"Double needance of sending GR")
             else:
@@ -83,7 +83,7 @@ class SlaveBalancer(sb.SimpleBalancer):
                 if isinstance(add_args, list) and len(add_args) == 3 \
                         and isinstance(add_args[0], list):
                     if not add_args[1]:
-                        return "send_get_request", [0, 2]
+                        return "send_get_request", [0, self.S]
                     else:
                         raise Exception(f"Wrong args list format: {add_args}")
                 else:

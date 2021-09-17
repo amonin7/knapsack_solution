@@ -1,5 +1,7 @@
+import time
 from typing import List
 from queue import Queue
+import random as rnd
 
 
 class Item:
@@ -57,14 +59,12 @@ def dictToNode(d: dict) -> Node:
 
 class Solver:
 
-    # TODO: save vector of fixed vars
-    # TODO: change ramify -> branch
-    # TODO: add tests
-    # TODO: MPI for Py - parallel the task
     def __init__(self, subproblems):
         self.n = self.initialize_amount()
-        self.w = self.initialize_weight()
-        self.arr = self.initialize_items()
+        self.arr, total_w = self.initialize_items()
+        self.arr.sort()
+        self.arr.reverse()
+        self.w = self.initialize_weight(total_w)
         self.max_profit = 0
         self.tasks_q = Queue()
         for el in subproblems:
@@ -89,13 +89,29 @@ class Solver:
         return self.tasks_q.qsize()
 
     def initialize_amount(self):
-        return 15
+        return 35
 
-    def initialize_weight(self):
-        return 15
+    def initialize_weight(self, total_w=10):
+        return 1 / 2 * total_w
 
+    # ToDo: отделить функцию (вынести)
     def initialize_items(self):
-        return [Item(2, 40), Item(3.1, 50), Item(1.98, 100), Item(5, 95), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30)]
+        rnd.seed(42)
+        R = 1000
+        items = list()
+        total_w = 0
+        for i in range(self.initialize_amount()):
+            w = int(rnd.uniform(1, R) * 100) / 100
+            p = 0
+            while p <= 1:
+                p = rnd.randint(int(w) - R // 100, int(w) + R // 100)
+            i = Item(w, p)
+            items.append(i)
+            total_w += w
+        return items, total_w
+
+    # def initialize_items(self):
+    #     return [Item(2, 40), Item(3.1, 50), Item(1.98, 100), Item(5, 95), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30)]
     #
     # def initialize_items(self):
     #     return [Item(2, 40), Item(3.1, 50), Item(1.98, 100), Item(5, 95), Item(3, 30)]
@@ -120,7 +136,7 @@ class Solver:
 
         return profit_bound
 
-    def ramify(self, u: Node) -> None:
+    def branch(self, u: Node) -> None:
         v_in = Node(0, 0, 0, 0)
         if u.level == self.n - 1:
             return
@@ -147,28 +163,29 @@ class Solver:
     def solve(self, n):
         if n > 0:
             while n > 0 and not self.tasks_q.empty():
-                self.ramify(self.tasks_q.get())
+                self.branch(self.tasks_q.get())
                 n -= 1
         else:
             while not self.tasks_q.empty():
-                self.ramify(self.tasks_q.get())
+                self.branch(self.tasks_q.get())
         return "solved"
 
 
-# if __name__ == '__main__':
-#     solver = Solver()
-#     n = solver.initialize_amount()
-#     W = solver.initialize_weight()
-#     items = solver.initialize_items()
-#     items.sort()
-#     items.reverse()
-#
-#     # root = Node(-1, 0, 0, 0)
-#     root = Node(0, items[0].value, 0, items[0].weight)
-#     root.bound = solver.bound(root, n, W, items)
-#
-#     print(items)
-#     solver.tasks_q.put(root)
-#     while not solver.tasks_q.empty():
-#         solver.ramify(solver.tasks_q.get(), n, items, W)
-#     print(solver.max_profit)
+if __name__ == '__main__':
+    solver = Solver([])
+    s2 = Solver([])
+    # items = solver.initialize_items()
+    # items.sort()
+    # items.reverse()
+
+    # root = Node(-1, 0, 0, 0)
+    root = Node(0, solver.arr[0].value, 0, solver.arr[0].weight)
+    root.bound = solver.bound(root)
+
+    # print(items)
+    solver.tasks_q.put(root)
+    start = time.time()
+    while not solver.tasks_q.empty():
+        solver.branch(solver.tasks_q.get())
+    print(solver.max_profit)
+    print(f"time: {int((time.time() - start) * 1000) / 1000}")
