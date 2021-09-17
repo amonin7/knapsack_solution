@@ -3,14 +3,9 @@ import pandas as pd
 
 class TraceCollector:
 
-    def __init__(self, filename, proc_am):
+    def __init__(self, filename, proc_id):
         self.filename = filename
-        self.frame = {}
-        for i in range(proc_am):
-            self.frame['timestamp' + str(i)] = [0]
-            self.frame['state' + str(i)] = ['init']
-            self.frame['args' + str(i)] = ['-']
-        self.proc_am = proc_am
+        self.frame = {'timestamp' + str(proc_id): [0], 'state' + str(proc_id): ['init'], 'args' + str(proc_id): ['-']}
 
     def write(self, proc_num, timestamp, state, args):
         self.frame['timestamp' + str(proc_num)].append(timestamp)

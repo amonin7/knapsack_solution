@@ -66,7 +66,7 @@ class SlaveBalancer(sb.SimpleBalancer):
                     and isinstance(add_args[0], list):
                 isSentGR = add_args[1]
                 if not isSentGR:
-                    return "send_get_request", [0, 2]
+                    return "send_get_request", [0, 3]
                 else:
                     raise Exception(f"Double needance of sending GR")
             else:
