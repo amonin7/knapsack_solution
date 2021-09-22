@@ -13,11 +13,12 @@ class MasterBalancer(sb.SimpleBalancer):
         self.M = M
         self.m = m
         self.arg = arg
+        self.last_t = T
 
     def balance(self, state, subs_amount, add_args=None):
         self.state = state
         if state == "starting":
-            return "solve", [self.proc_am]
+            return "solve", [self.proc_am * 5]
         elif state == "solved" or state == "nothing_to_receive":
             return "receive", []
         elif state == "received_get_request":
@@ -35,9 +36,23 @@ class MasterBalancer(sb.SimpleBalancer):
             else:
                 raise Exception(f"Wrong args list format: {add_args}")
         elif state == "received_subproblems":
-            self.state = "receive"
-            return "receive", []
+            if subs_amount > self.M and self.last_t != -1:
+                self.last_t = -1
+                return "send_T", [-1]
+            else:
+                self.state = "receive"
+                return "receive", []
         elif state == "sent_subproblems" or state == "sent_get_request" or state == "sent_exit_command":
+            if self.alive_proc_am == 0:
+                self.state = "exit"
+                return "exit", []
+            else:
+                if subs_amount < self.m and self.last_t != self.T:
+                    self.last_t = self.T
+                    return "send_T", [self.T]
+                self.state = "receive"
+                return "receive", []
+        elif state == "sent_T":
             if self.alive_proc_am == 0:
                 self.state = "exit"
                 return "exit", []
@@ -48,7 +63,7 @@ class MasterBalancer(sb.SimpleBalancer):
 
 class SlaveBalancer(sb.SimpleBalancer):
 
-    def __init__(self, state, max_depth, proc_am, prc_blnc, alive_proc_am=0, T=10, S=5, m=0, M=0, arg=5):
+    def __init__(self, state, max_depth, proc_am, prc_blnc, alive_proc_am=0, T=100, S=5, m=0, M=0, arg=5):
         super().__init__(state, max_depth, proc_am, prc_blnc)
         self.alive_proc_am = alive_proc_am
         self.T = T
@@ -66,7 +81,7 @@ class SlaveBalancer(sb.SimpleBalancer):
                     and isinstance(add_args[0], list):
                 isSentGR = add_args[1]
                 if not isSentGR:
-                    return "send_get_request", [0, self.S]
+                    return "send_get_request", [0, 1]
                 else:
                     raise Exception(f"Double needance of sending GR")
             else:

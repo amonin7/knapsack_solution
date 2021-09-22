@@ -89,7 +89,7 @@ class Solver:
         return self.tasks_q.qsize()
 
     def initialize_amount(self):
-        return 35
+        return 50
 
     def initialize_weight(self, total_w=10):
         return 1 / 2 * total_w

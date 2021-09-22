@@ -46,40 +46,52 @@ class Engine:
             self.solver = sl.Solver(subproblems=[])
 
             self.communicator = com.SimpleCommunicator(comm=comm)
-        t = time.time()
-        if self.rank == 0:
-            t = time.time()
-        self.timer = comm.bcast(t, 0)
+        # t = time.time()
+        # if self.rank == 0:
+        #     t = time.time()
+        # self.timer = comm.bcast(t, 0)
+        self.timer = time.time()
         self.state = "starting"
 
     def run(self) -> None:
         self.initializeAll()
         while True:
             state = self.state
-            self.route_collector.write(self.rank, time.time() - self.timer, "balance", f"state={self.state}")
+            start = round(time.time() - self.timer, 7)
             command, outputs = self.balancer.balance(state=state,
                                                      subs_amount=self.solver.get_sub_amount(),
                                                      add_args=[[], False, self.rank]
                                                      )
+            self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7):.7f}", "balance", f"state={self.state}")
             if command == "receive":
+                start = round(time.time() - self.timer, 7)
                 receive_status, message, sender = self.communicator.receive()
-                self.route_collector.write(self.rank, time.time() - self.timer, "receive", f"mes_type={message.message_type}")
+                self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}", "receive", f"mes_type={message.message_type}")
                 if receive_status != "received_exit_command":
                     if receive_status == "received_subproblems":
                         self.solver.putSubproblems(message.payload)
 
-                    self.route_collector.write(self.rank, time.time() - self.timer, "balance", f"state={receive_status}")
+                    start = round(time.time() - self.timer, 7)
                     command, outputs = self.balancer.balance(state=receive_status,
                                                              subs_amount=self.solver.get_sub_amount(),
                                                              add_args=[[message.payload, sender], False, self.rank]
                                                              )
+                    self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}", "balance", f"state={receive_status}")
                     if command == "send_subproblems":
+                        start = round(time.time() - self.timer, 7)
                         self.state = self.send_subs(subs_am=outputs[1], dest=outputs[0])
-                        self.route_collector.write(self.rank, time.time() - self.timer, command,
+                        self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}", command,
+                                                   f"subs_am={outputs[1]}, dest={outputs[0]}")
+                    elif command == "send_T":
+                        t = outputs[0]
+                        start = round(time.time() - self.timer, 7)
+                        self.send_t_to_all_proc(t)
+                        self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}", command,
                                                    f"subs_am={outputs[1]}, dest={outputs[0]}")
                     elif command == "send_get_request":
                         receiver = outputs[0]
                         amount_of_tasks = outputs[1]
+                        start = round(time.time() - self.timer, 7)
                         self.state, outputs = self.communicator.send(
                             receiver,
                             me.Message(
@@ -87,32 +99,36 @@ class Engine:
                                 payload=amount_of_tasks
                             )
                         )
-                        self.route_collector.write(self.rank, time.time() - self.timer, command,
+                        self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}", command,
                                                    f"subs_am={outputs[1]}, dest={outputs[0]}")
                     elif command == "send_exit_command":
                         receiver = outputs[0]
+                        start = round(time.time() - self.timer, 7)
                         self.state, outputs = self.communicator.send(
                             receiver,
                             me.Message(message_type="exit_command")
                         )
-                        self.route_collector.write(self.rank, time.time() - self.timer, command,
+                        self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}", command,
                                                    f"dest={receiver}")
                     elif command == "solve":
                         tasks_am = outputs[0]
+                        start = round(time.time() - self.timer, 7)
                         self.state = self.solver.solve(tasks_am)
-                        self.route_collector.write(self.rank, time.time() - self.timer, command,
+                        self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}", command,
                                                    f"tasks_am={tasks_am}")
                 else:
                     break
             elif command == "send_subproblems":
+                start = round(time.time() - self.timer, 7)
                 self.state = self.send_subs(subs_am=outputs[1], dest=outputs[0])
-                self.route_collector.write(self.rank, time.time() - self.timer, command,
+                self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}", command,
                                            f"subs_am={outputs[1]}, dest={outputs[0]}")
             elif command == "send_all":
                 self.state = self.send_all_subs_to_all_proc()
             elif command == "send_get_request":
                 receiver = outputs[0]
                 amount_of_tasks = outputs[1]
+                start = round(time.time() - self.timer, 7)
                 self.state, outputs = self.communicator.send(
                     receiver,
                     me.Message(
@@ -120,23 +136,26 @@ class Engine:
                         payload=amount_of_tasks
                     )
                 )
-                self.route_collector.write(self.rank, time.time() - self.timer, command,
+                self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}", command,
                                            f"subs_am={amount_of_tasks}, dest={receiver}")
             elif command == "send_exit_command":
                 receiver = outputs[0]
+                start = round(time.time() - self.timer, 7)
                 self.state, outputs = self.communicator.send(
                     receiver,
                     me.Message(message_type="exit_command")
                 )
-                self.route_collector.write(self.rank, time.time() - self.timer, command,
+                self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}", command,
                                            f"dest={outputs[0]}")
             elif command == "solve":
                 tasks_am = outputs[0]
+                start = round(time.time() - self.timer, 7)
                 self.state = self.solver.solve(tasks_am)
-                self.route_collector.write(self.rank, time.time() - self.timer, command,
+                self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}", command,
                                            f"tasks_am={tasks_am}")
             elif command == "exit":
-                self.route_collector.write(self.rank, time.time() - self.timer, command,
+                start = round(time.time() - self.timer, 7)
+                self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}", command,
                                            "")
                 break
         profit = self.comm.reduce(self.solver.max_profit, MPI.MAX, root=0)
@@ -174,6 +193,19 @@ class Engine:
             message = me.Message(
                 message_type="subproblems",
                 payload=message_list
+            )
+            state, outputs = self.communicator.send(
+                receiver=dest_proc,
+                message=message
+            )
+        return state
+
+    def send_t_to_all_proc(self, t):
+        state = ""
+        for dest_proc in range(1, self.processes_amount):
+            message = me.Message(
+                message_type="T",
+                payload=t
             )
             state, outputs = self.communicator.send(
                 receiver=dest_proc,

@@ -55,13 +55,13 @@ class Engine:
             root.bound = self.solver.bound(root)
             self.solver.putSubproblems([root])
 
-            self.communicator = com.SimpleCommunicator()
+            self.communicator = com.SimpleCommunicator(self.comm)
         else:
             self.balancer = sb.SlaveBalancer("start", max_depth=self.max_depth, proc_am=self.processes_amount,
                                              prc_blnc=self.price_blc, arg=self.arg)
             self.solver = sl.Solver(subproblems=[])
 
-            self.communicator = com.SimpleCommunicator()
+            self.communicator = com.SimpleCommunicator(self.comm)
         self.state = "starting"
 
     def run(self) -> None:
