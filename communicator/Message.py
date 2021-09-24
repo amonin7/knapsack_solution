@@ -30,6 +30,12 @@ def pack(m: Message):
             "message_type": m.message_type,
             "payload": m.payload
         }
+    elif m.message_type == "T":
+        # payload is just number ex. payload = -1
+        return {
+            "message_type": m.message_type,
+            "payload": m.payload
+        }
 
 
 def unpack(d: dict) -> Message:
@@ -42,3 +48,5 @@ def unpack(d: dict) -> Message:
         return Message(d["message_type"], payload)
     elif d["message_type"] == "exit_command":
         return Message(d["message_type"])
+    elif d["message_type"] == "T":
+        return Message(d["message_type"], d["payload"])

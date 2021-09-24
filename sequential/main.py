@@ -2,6 +2,7 @@ import time
 from typing import List
 from queue import Queue
 import random as rnd
+from math import floor
 
 
 class Item:
@@ -89,32 +90,46 @@ class Solver:
         return self.tasks_q.qsize()
 
     def initialize_amount(self):
-        return 50
+        return 20
 
     def initialize_weight(self, total_w=10):
-        return 1 / 2 * total_w
+        return 2 * floor(self.n / 2) + 1
+    #
+    # def initialize_weight(self, total_w=10):
+    #     return 1 / 2 * total_w
 
     # ToDo: отделить функцию (вынести)
-    def initialize_items(self):
-        rnd.seed(42)
-        R = 1000
-        items = list()
-        total_w = 0
-        for i in range(self.initialize_amount()):
-            w = int(rnd.uniform(1, R) * 100) / 100
-            p = 0
-            while p <= 1:
-                p = rnd.randint(int(w) - R // 100, int(w) + R // 100)
-            i = Item(w, p)
-            items.append(i)
-            total_w += w
-        return items, total_w
+    # def initialize_items(self):
+    #     rnd.seed(42)
+    #     R = 1000
+    #     items = list()
+    #     total_w = 0
+    #     for i in range(self.initialize_amount()):
+    #         w = int(rnd.uniform(1, R) * 100) / 100
+    #         p = 0
+    #         while p <= 1:
+    #             p = rnd.randint(int(w) - R // 100, int(w) + R // 100)
+    #         i = Item(w, p)
+    #         items.append(i)
+    #         total_w += w
+    #     return items, total_w
 
     # def initialize_items(self):
     #     return [Item(2, 40), Item(3.1, 50), Item(1.98, 100), Item(5, 95), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30), Item(3, 30)]
     #
     # def initialize_items(self):
     #     return [Item(2, 40), Item(3.1, 50), Item(1.98, 100), Item(5, 95), Item(3, 30)]
+
+    def initialize_items(self):
+        items = list()
+        total_w = 0
+        n = self.initialize_amount()
+        for i in range(n):
+            w = 2
+            p = 2
+            i = Item(w, p)
+            items.append(i)
+        return items, total_w
 
     def cmp(self, i1: Item, i2: Item):
         return i1.value / i1.weight > i2.value / i2.weight
