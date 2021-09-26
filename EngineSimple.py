@@ -102,12 +102,12 @@ class Engine:
                     elif command == "solve":
                         tasks_am = outputs[0]
                         start = round(time.time() - self.timer, 8)
-                        self.state = self.solver.solve(tasks_am)
+                        self.state, solved_amount = self.solver.solve(tasks_am)
                         end = round(time.time() - self.timer, 8)
                         self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}",
                                                    command,
                                                    f"tasks_am={tasks_am}")
-                        self.slv_cnt += (end - start) / tasks_am
+                        self.slv_cnt += (end - start) / solved_amount
                         self.slv_act += 1
                 else:
                     break
@@ -116,11 +116,11 @@ class Engine:
             elif command == "solve":
                 tasks_am = outputs[0]
                 start = round(time.time() - self.timer, 8)
-                self.state = self.solver.solve(tasks_am)
+                self.state, solved_amount = self.solver.solve(tasks_am)
                 end = round(time.time() - self.timer, 8)
                 self.route_collector.write(self.rank, f"{start:.7f}-{end}", command,
                                            f"tasks_am={tasks_am}")
-                self.slv_cnt += (end - start) / tasks_am
+                self.slv_cnt += (end - start) / solved_amount
                 self.slv_act += 1
             elif command == "exit":
                 start = round(time.time() - self.timer, 7)
@@ -139,10 +139,10 @@ class Engine:
         snd = self.comm.reduce(self.snd_cnt / self.snd_act, MPI.SUM, root=0)
         if self.rank == 0:
             print(f"maximum profit: {profit}")
-            print(f"slv: {(slv / self.comm.size):.7f}")
-            print(f"blc: {(blc / self.comm.size):.7f}")
-            print(f"rcv: {(rcv / self.comm.size):.7f}")
-            print(f"snd: {(snd / self.comm.size):.7f}")
+            print(f"price_solve={(slv / self.comm.size):.7f},")
+            print(f"price_balance={(blc / self.comm.size):.7f},")
+            print(f"price_receive={(rcv / self.comm.size):.7f},")
+            print(f"price_send={(snd / self.comm.size):.7f}):")
 
             max_time = self.route_collector.frame['timestamp0'][-1]
             print(f"maximum time    : {max_time}")

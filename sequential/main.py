@@ -176,14 +176,17 @@ class Solver:
             self.tasks_q.put(v_out)
 
     def solve(self, n):
+        cnt = 0
         if n > 0:
             while n > 0 and not self.tasks_q.empty():
                 self.branch(self.tasks_q.get())
+                cnt += 1
                 n -= 1
         else:
             while not self.tasks_q.empty():
                 self.branch(self.tasks_q.get())
-        return "solved"
+                cnt += 1
+        return "solved", cnt
 
 
 if __name__ == '__main__':
