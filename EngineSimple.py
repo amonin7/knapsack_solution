@@ -25,10 +25,6 @@ class Engine:
         self.communicator = None
         self.solver = None
 
-        # self.timers = []
-        # self.downtime = []  # amount of time when process was without any tasks
-        # self.isDoneStatuses = []
-
         self.slv_cnt = 0.0
         self.blc_cnt = 0.0
         self.snd_cnt = 0.0
@@ -86,7 +82,9 @@ class Engine:
                 self.rcv_act += 1
                 if receive_status != "received_exit_command":
                     if receive_status == "received_subproblems":
-                        self.solver.putSubproblems(message.payload)
+                        self.solver.putSubproblems(message.payload['problems'])
+                        if self.solver.max_profit > message.payload['record']:
+                            self.solver.max_profit = message.payload['record']
 
                     start = round(time.time() - self.timer, 8)
                     command, outputs = self.balancer.balance(state=receive_status,
@@ -164,7 +162,10 @@ class Engine:
             message_list = probs[int((dest_proc - 1) * probs_amnt * part): int(dest_proc * probs_amnt * part)]
             message = me.Message(
                 message_type="subproblems",
-                payload=message_list
+                payload={
+                    'problems': message_list,
+                    'record': self.solver.max_profit
+                }
             )
             start = round(time.time() - self.timer, 7)
             state, outputs = self.communicator.send(

@@ -16,13 +16,17 @@ def pack(m: Message):
             "payload": m.payload
         }
     elif m.message_type == "subproblems":
-        # payload is a list of Nodes. ex. payload = [Node(0,0,0,0), Node(1,0,0,0), Node(2,0,0,0)]
-        payload = list()
-        for node in m.payload:
-            payload.append(ma.nodeToDict(node))
+        # payload is a list of Nodes.
+        # ex. payload = {'problems': [Node(0,0,0,0), Node(1,0,0,0), Node(2,0,0,0)], 'record': 345}
+        problems = list()
+        for node in m.payload['problems']:
+            problems.append(ma.nodeToDict(node))
         return {
             "message_type": m.message_type,
-            "payload": payload
+            "payload": {
+                'problems': problems,
+                'record': m.payload['record']
+            }
         }
     elif m.message_type == "exit_command":
         # payload is just nothing. ex. payload = None
@@ -30,8 +34,8 @@ def pack(m: Message):
             "message_type": m.message_type,
             "payload": m.payload
         }
-    elif m.message_type == "T":
-        # payload is just number ex. payload = -1
+    elif m.message_type == "S":
+        # payload is just number ex. payload = {'S': 0, 'record': 345}
         return {
             "message_type": m.message_type,
             "payload": m.payload
@@ -42,11 +46,11 @@ def unpack(d: dict) -> Message:
     if d["message_type"] == "get_request":
         return Message(d["message_type"], d["payload"])
     elif d["message_type"] == "subproblems":
-        payload = list()
-        for node_dict in d["payload"]:
-            payload.append(ma.dictToNode(node_dict))
-        return Message(d["message_type"], payload)
+        problems = list()
+        for node_dict in d["payload"]['problems']:
+            problems.append(ma.dictToNode(node_dict))
+        return Message(d["message_type"], {'problems': problems, 'record': d["payload"]['record']})
     elif d["message_type"] == "exit_command":
         return Message(d["message_type"])
-    elif d["message_type"] == "T":
+    elif d["message_type"] == "S":
         return Message(d["message_type"], d["payload"])

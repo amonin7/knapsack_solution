@@ -2,7 +2,7 @@ import balancer.SimpleBalancer as sb
 
 
 class MasterBalancer(sb.SimpleBalancer):
-    def __init__(self, state, max_depth, proc_am, prc_blnc, alive_proc_am=0, T=0, S=0, m=0, M=0, arg=5):
+    def __init__(self, state, max_depth, proc_am, prc_blnc, alive_proc_am=0, T=0, S=0, m=100, M=150, arg=10):
         super().__init__(state, max_depth, proc_am, prc_blnc)
         if alive_proc_am == 0:
             self.alive_proc_am = proc_am - 1
@@ -14,11 +14,12 @@ class MasterBalancer(sb.SimpleBalancer):
         self.m = m
         self.arg = arg
         self.last_t = T
+        self.s_am = []
 
     def balance(self, state, subs_amount, add_args=None):
         self.state = state
         if state == "starting":
-            return "solve", [self.proc_am * 5]
+            return "solve", [self.proc_am * self.arg]
         elif state == "solved" or state == "nothing_to_receive":
             return "receive", []
         elif state == "received_get_request":
@@ -36,34 +37,37 @@ class MasterBalancer(sb.SimpleBalancer):
             else:
                 raise Exception(f"Wrong args list format: {add_args}")
         elif state == "received_subproblems":
-            if subs_amount > self.M and self.last_t != -1:
-                self.last_t = -1
-                return "send_T", [-1]
+            sender = add_args[0][1]
+            self.s_am.append(subs_amount)
+            # TODO: звучит как проблема то, что не понятно, что тогда делать в случае, когда self.m < subs_am < self.M
+            if subs_amount > self.M:
+                return "send_S", [0, sender]
+            # elif subs_amount > self.m:
+            #     return "send_S", [self.S // 2, sender]
             else:
-                self.state = "receive"
-                return "receive", []
-        elif state == "sent_subproblems" or state == "sent_get_request" or state == "sent_exit_command":
-            if self.alive_proc_am == 0:
-                self.state = "exit"
-                return "exit", []
-            else:
-                if subs_amount < self.m and self.last_t != self.T:
-                    self.last_t = self.T
-                    return "send_T", [self.T]
-                self.state = "receive"
-                return "receive", []
-        elif state == "sent_T":
+                return "send_S", [self.S, sender]
+        elif state == "sent_subproblems" or state == "sent_get_request"\
+                or state == "sent_exit_command" or state == "sent_S":
             if self.alive_proc_am == 0:
                 self.state = "exit"
                 return "exit", []
             else:
                 self.state = "receive"
                 return "receive", []
+        else:
+            raise Exception(f"Wrong state={state}")
+        # elif state == "sent_T":
+        #     if self.alive_proc_am == 0:
+        #         self.state = "exit"
+        #         return "exit", []
+        #     else:
+        #         self.state = "receive"
+        #         return "receive", []
 
 
 class SlaveBalancer(sb.SimpleBalancer):
 
-    def __init__(self, state, max_depth, proc_am, prc_blnc, alive_proc_am=0, T=100, S=5, m=0, M=0, arg=5):
+    def __init__(self, state, max_depth, proc_am, prc_blnc, alive_proc_am=0, T=200, S=10, m=0, M=0, arg=5):
         super().__init__(state, max_depth, proc_am, prc_blnc)
         self.alive_proc_am = alive_proc_am
         self.T = T
@@ -74,7 +78,7 @@ class SlaveBalancer(sb.SimpleBalancer):
 
     def balance(self, state, subs_amount, add_args=None):
         self.state = state
-        if self.state == "sent_get_request" or self.state == "sent":
+        if self.state == "sent_get_request" or self.state == "sent" or self.state == 'sent_subproblems':
             return "receive", []
         elif self.state == "starting":
             if isinstance(add_args, list) and len(add_args) == 3 \
@@ -86,9 +90,9 @@ class SlaveBalancer(sb.SimpleBalancer):
                     raise Exception(f"Double needance of sending GR")
             else:
                 raise Exception(f"Wrong args list format: {add_args}")
-        elif state == "received_subproblems":
+        elif state == "received_subproblems" or self.state == 'received_S':
             return "solve", [self.T]
-        elif self.state == "solved" or self.state == 'sent_subproblems':
+        elif self.state == "solved":
             if subs_amount > 0:
                 if subs_amount > self.S:
                     return "send_subproblems", [0, self.S]
@@ -106,5 +110,4 @@ class SlaveBalancer(sb.SimpleBalancer):
         elif state == "received_exit_command":
             return "exit", []
         else:
-            print(state)
-            raise Exception("no suitable state discovered")
+            raise Exception(f"no suitable state discovered for state={state}")
