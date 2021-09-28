@@ -39,6 +39,8 @@ class Engine:
         self.state = ""
         self.timer = time.time()
 
+        self.subs_am = 0
+
     # TODO: вынести в отдельный метод вне ENGINE
     def initializeAll(self) -> None:
         if self.rank == 0:
@@ -101,6 +103,7 @@ class Engine:
                         tasks_am = outputs[0]
                         start = round(time.time() - self.timer, 8)
                         self.state, solved_amount = self.solver.solve(tasks_am)
+                        self.subs_am += solved_amount
                         end = round(time.time() - self.timer, 8)
                         self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}",
                                                    command,
@@ -115,6 +118,7 @@ class Engine:
                 tasks_am = outputs[0]
                 start = round(time.time() - self.timer, 8)
                 self.state, solved_amount = self.solver.solve(tasks_am)
+                self.subs_am += solved_amount
                 end = round(time.time() - self.timer, 8)
                 self.route_collector.write(self.rank, f"{start:.7f}-{end}", command,
                                            f"tasks_am={tasks_am}")
@@ -135,12 +139,16 @@ class Engine:
         blc = self.comm.reduce(self.blc_cnt / self.blc_act, MPI.SUM, root=0)
         rcv = self.comm.reduce(self.rcv_cnt / self.rcv_act, MPI.SUM, root=0)
         snd = self.comm.reduce(self.snd_cnt / self.snd_act, MPI.SUM, root=0)
+
+        subs_total = self.comm.reduce(self.subs_am, MPI.SUM, root=0)
         if self.rank == 0:
             print(f"maximum profit: {profit}")
             print(f"price_solve={(slv / self.comm.size):.7f},")
             print(f"price_balance={(blc / self.comm.size):.7f},")
             print(f"price_receive={(rcv / self.comm.size):.7f},")
             print(f"price_send={(snd / self.comm.size):.7f}):")
+
+            print(f"subs_am={subs_total}")
 
             max_time = self.route_collector.frame['timestamp0'][-1]
             print(f"maximum time    : {max_time}")

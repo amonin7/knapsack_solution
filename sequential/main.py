@@ -192,15 +192,9 @@ class Solver:
 if __name__ == '__main__':
     solver = Solver([])
     s2 = Solver([])
-    # items = solver.initialize_items()
-    # items.sort()
-    # items.reverse()
-
-    # root = Node(-1, 0, 0, 0)
     root = Node(0, solver.arr[0].value, 0, solver.arr[0].weight)
     root.bound = solver.bound(root)
 
-    # print(items)
     solver.tasks_q.put(root)
     start = time.time()
     while not solver.tasks_q.empty():
