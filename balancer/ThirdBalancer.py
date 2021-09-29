@@ -56,13 +56,6 @@ class MasterBalancer(sb.SimpleBalancer):
                 return "receive", []
         else:
             raise Exception(f"Wrong state={state}")
-        # elif state == "sent_T":
-        #     if self.alive_proc_am == 0:
-        #         self.state = "exit"
-        #         return "exit", []
-        #     else:
-        #         self.state = "receive"
-        #         return "receive", []
 
 
 class SlaveBalancer(sb.SimpleBalancer):
@@ -110,4 +103,4 @@ class SlaveBalancer(sb.SimpleBalancer):
         elif state == "received_exit_command":
             return "exit", []
         else:
-            raise Exception(f"no suitable state discovered for state={state}")
+            raise Exception(f"Wrong state={state}")
