@@ -90,7 +90,7 @@ class Solver:
         return self.tasks_q.qsize()
 
     def initialize_amount(self):
-        return 15
+        return 20
 
     def initialize_weight(self, total_w=10):
         return 2 * floor(self.n / 2) + 1
@@ -191,7 +191,6 @@ class Solver:
 
 if __name__ == '__main__':
     solver = Solver([])
-    s2 = Solver([])
     root = Node(0, solver.arr[0].value, 0, solver.arr[0].weight)
     root.bound = solver.bound(root)
 
