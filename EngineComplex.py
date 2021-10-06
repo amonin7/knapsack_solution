@@ -37,6 +37,9 @@ class Engine:
         self.snd_act = 0
         self.rcv_act = 0
 
+        self.rcvs = []
+        self.rcvl = []
+
         self.isSentRequest = []
         self.state = ""
         self.timer = time.time()
@@ -80,10 +83,12 @@ class Engine:
             if command == "receive":
                 start = round(time.time() - self.timer, 7)
                 receive_status, message, sender = self.communicator.receive()
-                end = round(time.time() - self.timer, 8)
+                end = round(time.time() - self.timer, 7)
                 self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}", "receive",
                                            f"mes_type={message.message_type}")
                 self.rcv_cnt += (end - start) / len(str(message))
+                self.rcvs.append(f"{(end - start):.7f}")
+                self.rcvl.append(len(str(me.pack(message))))
                 self.rcv_act += 1
                 if receive_status != "received_exit_command":
                     if receive_status == "received_subproblems":
@@ -275,6 +280,9 @@ class Engine:
         snd = self.comm.reduce(self.snd_cnt / self.snd_act, MPI.SUM, root=0)
 
         subs_total = self.comm.reduce(self.subs_am, MPI.SUM, root=0)
+
+        rcvs = self.comm.gather(self.rcvs, root=0)
+        rcvl = self.comm.gather(self.rcvl, root=0)
         if self.rank == 0:
             print(f"maximum profit: {profit}")
             print(f"price_solve={(slv / self.comm.size):.7f},")
@@ -283,6 +291,16 @@ class Engine:
             print(f"price_send={(snd / self.comm.size):.7f}):")
 
             print(f"subs_am={subs_total}")
+
+            with open("rcvc.txt", "w") as file:
+                result1 = []
+                for lst in rcvs:
+                    result1.extend(lst)
+                file.write(f"rcvs=np.array( {result1} )\n")
+                result1 = []
+                for lst in rcvl:
+                    result1.extend(lst)
+                file.write(f"rcvl=np.array( {result1} )")
 
             max_time = self.route_collector.frame['timestamp0'][-1]
             print(f"maximum time    : {max_time}")
