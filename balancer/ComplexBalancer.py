@@ -4,7 +4,7 @@ import balancer.SimpleBalancer as sb
 
 
 class MasterBalancer(sb.SimpleBalancer):
-    def __init__(self, state, max_depth, proc_am, prc_blnc, T=0, S=10, m=50, M=100, arg=10):
+    def __init__(self, state, max_depth, proc_am, prc_blnc, T=0, S=10, m=50, M=100, arg=40):
         super().__init__(state, max_depth, proc_am, prc_blnc)
         self.T = T
         self.S = S
@@ -58,7 +58,7 @@ class MasterBalancer(sb.SimpleBalancer):
 
 class SlaveBalancer(sb.SimpleBalancer):
 
-    def __init__(self, state, max_depth, proc_am, prc_blnc, alive_proc_am=0, T=200, S=10, m=0, M=0, arg=5):
+    def __init__(self, state, max_depth, proc_am, prc_blnc, alive_proc_am=0, T=400, S=10, m=0, M=0, arg=5):
         super().__init__(state, max_depth, proc_am, prc_blnc)
         self.alive_proc_am = alive_proc_am
         self.T = T
