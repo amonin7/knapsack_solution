@@ -2,8 +2,8 @@ import subprocess
 
 
 if __name__ == "__main__":
-    T = list(range(20, 301, 40))
-    S = list(range(3, 29, 5))
+    T = list(range(220, 401, 30))
+    S = list(range(13, 39, 5))
     for t in T:
         for s in S:
             bashCommand = f'mpiexec --hostfile hostfile -n 10 python EngineComplex.py {t} {s}'
