@@ -311,15 +311,17 @@ class Engine:
 
             max_time = float(self.route_collector.frame['timestamp0'][-1].split('-')[1])
             # print(f"maximum time    : {max_time}")
-            with open("ts_times.csv", "w") as f:
-                f.write(f'{max_time},{self.T},{self.S}')
-        traces = self.comm.gather(self.route_collector.frame, root=0)
-        if self.rank == 0:
-            res = {}
-            for d in traces:
-                res.update(d)
-            self.route_collector.frame = res
-            self.route_collector.save()
+            with open("ts_times.csv", "a") as f:
+                f.write(f'{max_time},{self.T},{self.S}\n')
+                f.close()
+        # traces = self.comm.gather(self.route_collector.frame, root=0)
+        # if self.rank == 0:
+        #     res = {}
+        #     for d in traces:
+        #         res.update(d)
+        #     self.route_collector.frame = res
+        #     self.route_collector.save()
+
         # self.comm_collector.save()
 
     def send_subproblems(self, sender, amount):
