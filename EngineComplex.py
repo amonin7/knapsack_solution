@@ -18,9 +18,11 @@ class Engine:
                  comm,
                  T=200,
                  S=10,
+                 I=20,
                  arg=7):
         self.T = T
         self.S = S
+        self.I = I
 
         self.subs_am = 0
         self.comm = comm
@@ -56,7 +58,7 @@ class Engine:
         if self.rank == 0:
             self.balancer = sb.MasterBalancer("start", max_depth=0, proc_am=self.processes_amount,
                                               prc_blnc=0, T=self.T, S=self.S)
-            self.solver = sl.Solver(subproblems=[])
+            self.solver = sl.Solver(subproblems=[], I=self.I)
             root = sl.Node(0, self.solver.arr[0].value, 0, self.solver.arr[0].weight)
             root.bound = self.solver.bound(root)
             self.solver.putSubproblems([root])
@@ -65,7 +67,7 @@ class Engine:
         else:
             self.balancer = sb.SlaveBalancer("start", max_depth=0, proc_am=self.processes_amount,
                                              prc_blnc=0, T=self.T, S=self.S)
-            self.solver = sl.Solver(subproblems=[])
+            self.solver = sl.Solver(subproblems=[], I=self.I)
 
             self.communicator = com.SimpleCommunicator(comm=comm)
         self.timer = time.time()
@@ -311,8 +313,8 @@ class Engine:
 
             max_time = float(self.route_collector.frame['timestamp0'][-1].split('-')[1])
             # print(f"maximum time    : {max_time}")
-            with open("ts_times.csv", "a") as f:
-                f.write(f'{max_time},{self.T},{self.S}\n')
+            with open("experiments.csv", "a") as f:
+                f.write(f'{max_time},{self.T},{self.S},{self.I}\n')
                 f.close()
         # traces = self.comm.gather(self.route_collector.frame, root=0)
         # if self.rank == 0:
@@ -376,4 +378,8 @@ if __name__ == "__main__":
     if len(sys.argv) == 3:
         _, t, s = sys.argv
         eng = Engine(proc_amount=size, comm=comm, T=int(t), S=int(s))
+        eng.run()
+    elif len(sys.argv) == 4:
+        _, t, s, i = sys.argv
+        eng = Engine(proc_amount=size, comm=comm, T=int(t), S=int(s), I=int(i))
         eng.run()

@@ -20,14 +20,17 @@ class Experiment:
 
 
 def make_experiment():
-    T = list(range(220, 401, 30))
-    S = list(range(13, 39, 5))
+    T = list(range(100, 501, 40))
+    S = list(range(10, 31, 5))
+    I = list(range(18, 27, 2))
+    # for i in I:
+    i = 26
     for t in T:
         for s in S:
-            bashCommand = f'mpiexec --hostfile hostfile -n 10 python EngineComplex.py {t} {s}'
+            bashCommand = f'mpiexec --hostfile hostfile -n 10 python EngineComplex.py {t} {s} {i}'
             process = subprocess.Popen(bashCommand.split())
             output, error = process.communicate()
-            print(f'[*] Step done:  T={t},  S={s}')
+            print(f'[*] Step done:  T={t},  S={s},  I={i}')
 
 
 def sort_values():
@@ -60,4 +63,5 @@ def sort_values():
 
 
 if __name__ == "__main__":
-    sort_values()
+    # sort_values()
+    make_experiment()

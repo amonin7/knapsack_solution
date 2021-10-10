@@ -60,8 +60,11 @@ def dictToNode(d: dict) -> Node:
 
 class Solver:
 
-    def __init__(self, subproblems):
-        self.n = self.initialize_amount()
+    def __init__(self, subproblems, I=None):
+        if I is None:
+            self.n = self.initialize_amount()
+        else:
+            self.n = I
         self.arr, total_w = self.initialize_items()
         self.arr.sort()
         self.arr.reverse()
@@ -123,8 +126,7 @@ class Solver:
     def initialize_items(self):
         items = list()
         total_w = 0
-        n = self.initialize_amount()
-        for i in range(n):
+        for i in range(self.n):
             w = 2
             p = 2
             i = Item(w, p)
