@@ -1,4 +1,3 @@
-# import balancer.ThirdBalancer as sb
 import balancer.ComplexBalancer as sb
 from mpi4py import MPI
 import sequential.main as sl
@@ -7,7 +6,6 @@ import time
 import route.TraceCollector as rc
 import communicator.Message as me
 import sys
-
 # import route.CommunicationCollector as cc
 
 
@@ -248,7 +246,6 @@ class Engine:
             elif command == "send_all_exit_command":
                 while not outputs[0].empty():
                     (receiver, get_amount) = outputs[0].get()
-                    # print(f"copysize={outputs[0].qsize()}, size={self.balancer.poor_proc.qsize()}")
                     start = round(time.time() - self.timer, 7)
                     message = me.Message(message_type="exit_command")
                     self.state, outputs = self.communicator.send(
@@ -263,10 +260,8 @@ class Engine:
                 self.state = "sent_all_exit_command"
             elif command == "try_send_subproblems":
                 q = outputs[0]
-                # print(f"try_send_subproblems, s_am={self.solver.get_sub_amount()}, q_s={q.qsize()}")
                 while not q.empty() and self.solver.get_sub_amount() > 0:
                     (receiver, get_amount) = q.get()
-                    # print(f"copysize={q.qsize()}, size={self.balancer.poor_proc.qsize()}")
                     self.send_subproblems(receiver, get_amount)
                 self.state = "sent_subproblems"
             elif command == "exit":
@@ -277,21 +272,21 @@ class Engine:
             else:
                 raise Exception(f"wrong command={command}")
 
-        if self.slv_act == 0: self.slv_act = 1
-        if self.blc_act == 0: self.blc_act = 1
-        if self.rcv_act == 0: self.rcv_act = 1
-        if self.snd_act == 0: self.snd_act = 1
-
-        profit = self.comm.reduce(self.solver.max_profit, MPI.MAX, root=0)
-        slv = self.comm.reduce(self.slv_cnt / self.slv_act, MPI.SUM, root=0)
-        blc = self.comm.reduce(self.blc_cnt / self.blc_act, MPI.SUM, root=0)
-        rcv = self.comm.reduce(self.rcv_cnt / self.rcv_act, MPI.SUM, root=0)
-        snd = self.comm.reduce(self.snd_cnt / self.snd_act, MPI.SUM, root=0)
-
-        subs_total = self.comm.reduce(self.subs_am, MPI.SUM, root=0)
-
-        rcvs = self.comm.gather(self.rcvs, root=0)
-        rcvl = self.comm.gather(self.rcvl, root=0)
+        # if self.slv_act == 0: self.slv_act = 1
+        # if self.blc_act == 0: self.blc_act = 1
+        # if self.rcv_act == 0: self.rcv_act = 1
+        # if self.snd_act == 0: self.snd_act = 1
+        #
+        # profit = self.comm.reduce(self.solver.max_profit, MPI.MAX, root=0)
+        # slv = self.comm.reduce(self.slv_cnt / self.slv_act, MPI.SUM, root=0)
+        # blc = self.comm.reduce(self.blc_cnt / self.blc_act, MPI.SUM, root=0)
+        # rcv = self.comm.reduce(self.rcv_cnt / self.rcv_act, MPI.SUM, root=0)
+        # snd = self.comm.reduce(self.snd_cnt / self.snd_act, MPI.SUM, root=0)
+        #
+        # subs_total = self.comm.reduce(self.subs_am, MPI.SUM, root=0)
+        #
+        # rcvs = self.comm.gather(self.rcvs, root=0)
+        # rcvl = self.comm.gather(self.rcvl, root=0)
         if self.rank == 0:
             # print(f"maximum profit: {profit}")
             # print(f"price_solve={(slv / self.comm.size):.7f},")
@@ -301,15 +296,15 @@ class Engine:
             #
             # print(f"subs_am={subs_total}")
 
-            with open("rcvc.txt", "w") as file:
-                result1 = []
-                for lst in rcvs:
-                    result1.extend(lst)
-                file.write(f"rcvs=np.array( {result1} )\n")
-                result1 = []
-                for lst in rcvl:
-                    result1.extend(lst)
-                file.write(f"rcvl=np.array( {result1} )")
+            # with open("rcvc.txt", "w") as file:
+            #     result1 = []
+            #     for lst in rcvs:
+            #         result1.extend(lst)
+            #     file.write(f"rcvs=np.array( {result1} )\n")
+            #     result1 = []
+            #     for lst in rcvl:
+            #         result1.extend(lst)
+            #     file.write(f"rcvl=np.array( {result1} )")
 
             max_time = float(self.route_collector.frame['timestamp0'][-1].split('-')[1])
             # print(f"maximum time    : {max_time}")
