@@ -2,4 +2,4 @@ helloMPI.py
 input.txt
 .idea
 .ipynb_checkpoints
-*.csv
+Trace*.csv
