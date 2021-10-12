@@ -308,7 +308,7 @@ class Engine:
 
             max_time = float(self.route_collector.frame['timestamp0'][-1].split('-')[1])
             # print(f"maximum time    : {max_time}")
-            with open("experiments.csv", "a") as f:
+            with open("experiments26.csv", "a") as f:
                 f.write(f'{max_time},{self.T},{self.S},{self.I}\n')
                 f.close()
         # traces = self.comm.gather(self.route_collector.frame, root=0)
