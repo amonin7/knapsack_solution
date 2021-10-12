@@ -36,7 +36,7 @@ def make_experiment():
 
 def sort_values():
     exp = []
-    with open('experiments.csv', 'r') as f:
+    with open('experiments26.csv', 'r') as f:
         for line in f.read().split('\n')[:-1]:
             time, t, s, i = line.split(',')
             exp.append(Experiment(float(time), int(t), int(s), int(i)))
@@ -44,8 +44,8 @@ def sort_values():
     result = dict()
     res = []
     cur = []
-    i_in = 18
-    t_in = 100
+    i_in = 26
+    t_in = 400
     ts = set()
     ss = set()
     for s in range(18, 27, 2):
@@ -78,5 +78,5 @@ def sort_values():
 
 
 if __name__ == "__main__":
-    # sort_values()
-    make_experiment()
+    sort_values()
+    # make_experiment()
