@@ -378,3 +378,7 @@ if __name__ == "__main__":
         _, t, s, i = sys.argv
         eng = Engine(proc_amount=size, comm=comm, T=int(t), S=int(s), I=int(i))
         eng.run()
+    else:
+        eng = Engine(proc_amount=size, comm=comm, T=1500, S=60, I=26)
+        eng.run()
+
