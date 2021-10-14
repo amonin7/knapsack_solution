@@ -1,11 +1,11 @@
 import time
-
 from mpi4py import MPI
 import balancer.SimpleBalancer as sb
 import sequential.main as sl
 import communicator.SimpleCommunicator as com
 import communicator.Message as me
 import route.TraceCollector as rc
+import sys
 
 
 class Engine:
@@ -45,7 +45,7 @@ class Engine:
     def initializeAll(self) -> None:
         if self.rank == 0:
             self.balancer = sb.MasterBalancer("start", max_depth=0, proc_am=self.processes_amount,
-                                              prc_blnc=0)
+                                              prc_blnc=0, arg=self.arg)
             self.solver = sl.Solver(subproblems=[])
             root = sl.Node(0, self.solver.arr[0].value, 0, self.solver.arr[0].weight)
             root.bound = self.solver.bound(root)
@@ -54,7 +54,7 @@ class Engine:
             self.communicator = com.SimpleCommunicator(self.comm)
         else:
             self.balancer = sb.SlaveBalancer("start", max_depth=0, proc_am=self.processes_amount,
-                                             prc_blnc=0)
+                                             prc_blnc=0, arg=self.arg)
             self.solver = sl.Solver(subproblems=[])
 
             self.communicator = com.SimpleCommunicator(self.comm)
@@ -129,29 +129,37 @@ class Engine:
                 self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}", command,
                                            "")
                 break
-        if self.slv_act == 0: self.slv_act = 1
-        if self.blc_act == 0: self.blc_act = 1
-        if self.rcv_act == 0: self.rcv_act = 1
-        if self.snd_act == 0: self.snd_act = 1
-
-        profit = self.comm.reduce(self.solver.max_profit, MPI.MAX, root=0)
-        slv = self.comm.reduce(self.slv_cnt / self.slv_act, MPI.SUM, root=0)
-        blc = self.comm.reduce(self.blc_cnt / self.blc_act, MPI.SUM, root=0)
-        rcv = self.comm.reduce(self.rcv_cnt / self.rcv_act, MPI.SUM, root=0)
-        snd = self.comm.reduce(self.snd_cnt / self.snd_act, MPI.SUM, root=0)
-
-        subs_total = self.comm.reduce(self.subs_am, MPI.SUM, root=0)
+        # if self.slv_act == 0: self.slv_act = 1
+        # if self.blc_act == 0: self.blc_act = 1
+        # if self.rcv_act == 0: self.rcv_act = 1
+        # if self.snd_act == 0: self.snd_act = 1
+        #
+        # profit = self.comm.reduce(self.solver.max_profit, MPI.MAX, root=0)
+        # slv = self.comm.reduce(self.slv_cnt / self.slv_act, MPI.SUM, root=0)
+        # blc = self.comm.reduce(self.blc_cnt / self.blc_act, MPI.SUM, root=0)
+        # rcv = self.comm.reduce(self.rcv_cnt / self.rcv_act, MPI.SUM, root=0)
+        # snd = self.comm.reduce(self.snd_cnt / self.snd_act, MPI.SUM, root=0)
+        #
+        # subs_total = self.comm.reduce(self.subs_am, MPI.SUM, root=0)
+        m_time = self.comm.reduce(
+            float(self.route_collector.frame[f'timestamp{self.rank}'][-1].split('-')[1]),
+            MPI.MAX,
+            root=0
+        )
         if self.rank == 0:
-            print(f"maximum profit: {profit}")
-            print(f"price_solve={(slv / self.comm.size):.7f},")
-            print(f"price_balance={(blc / self.comm.size):.7f},")
-            print(f"price_receive={(rcv / self.comm.size):.7f},")
-            print(f"price_send={(snd / self.comm.size):.7f}):")
-
-            print(f"subs_am={subs_total}")
-
-            max_time = self.route_collector.frame['timestamp0'][-1]
-            print(f"maximum time    : {max_time}")
+            # print(f"maximum profit: {profit}")
+            # print(f"price_solve={(slv / self.comm.size):.7f},")
+            # print(f"price_balance={(blc / self.comm.size):.7f},")
+            # print(f"price_receive={(rcv / self.comm.size):.7f},")
+            # print(f"price_send={(snd / self.comm.size):.7f}):")
+            #
+            # print(f"subs_am={subs_total}")
+            #
+            # max_time = float(self.route_collector.frame['timestamp0'][-1].split('-')[1])
+            # print(f"maximum time    : {max_time}")
+            with open('argtime.csv', 'a') as f:
+                f.write(f'\n{m_time},{self.arg}')
+            # print(m_time)
         traces = self.comm.gather(self.route_collector.frame, root=0)
         if self.rank == 0:
             res = {}
@@ -191,5 +199,10 @@ class Engine:
 if __name__ == "__main__":
     comm = MPI.COMM_WORLD
     size = comm.Get_size()
-    eng = Engine(proc_amount=size, comm=comm)
-    eng.run()
+    if len(sys.argv) == 2:
+        _, arg = sys.argv
+        eng = Engine(proc_amount=size, comm=comm, arg=int(arg))
+        eng.run()
+    else:
+        eng = Engine(proc_amount=size, comm=comm)
+        eng.run()

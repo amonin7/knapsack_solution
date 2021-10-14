@@ -19,7 +19,6 @@ class Experiment:
         return self.t == other.t and self.s == other.s
 
 
-
 def make_experiment():
     T = list(range(400, 1001, 100))
     S = list(range(30, 91, 10))
@@ -32,6 +31,65 @@ def make_experiment():
             process = subprocess.Popen(bashCommand.split())
             output, error = process.communicate()
             print(f'[*] Step done:  T={t},  S={s},  I={i}')
+
+
+def find_best_arg():
+    cur_arg = 1
+    new_arg = 2
+    coeff = 2
+    multi = 1
+    bashCommand = f'mpiexec --hostfile hostfile -n 10 python EngineSimple.py {cur_arg}'
+    process = subprocess.Popen(bashCommand.split())
+    output, error = process.communicate()
+    multi *= coeff
+    while cur_arg != new_arg:
+        bashCommand = f'mpiexec --hostfile hostfile -n 10 python EngineSimple.py {new_arg}'
+        process = subprocess.Popen(bashCommand.split())
+        output, error = process.communicate()
+
+        with open('argtime.csv', 'r') as f:
+            line = f.read().split('\n')[-1]
+            time, arg = line.split(',')
+            time1 = float(time)
+            arg1 = int(arg)
+
+            line = f.read().split('\n')[-2]
+            time, arg = line.split(',')
+            time0 = float(time)
+            arg0 = int(arg)
+
+            if time1 >= time0:
+                multi /= coeff
+                cur_arg = arg1
+                new_arg = round(arg0 * multi)
+
+
+def find_best_arg_range():
+    for i in range(1, 150, 2):
+        bashCommand = f'mpiexec --hostfile hostfile -n 10 python EngineSimple.py {i}'
+        process = subprocess.Popen(bashCommand.split())
+        output, error = process.communicate()
+        # if i // 3 <= 2:
+        #     print(f'[*] step with arg={i} is done')
+        #     continue
+        #
+        # with open('argtime.csv', 'r') as f:
+        #     text = f.read().split('\n')
+        #     line = text[-1]
+        #     time, arg = line.split(',')
+        #     time1 = float(time)
+        #
+        #     line = text[-2]
+        #     time, arg = line.split(',')
+        #     time0 = float(time)
+        #
+        #     if time1 >= time0:
+        #         line = text[-3]
+        #         time, arg = line.split(',')
+        #         time_1 = float(time)
+        #         if time0 >= time_1:
+        #             break
+        print(f'[*] step with arg={i} is done')
 
 
 def sort_values():
@@ -78,5 +136,7 @@ def sort_values():
 
 
 if __name__ == "__main__":
-    sort_values()
+    # sort_values()
     # make_experiment()
+    # find_best_arg()
+    find_best_arg_range()
