@@ -47,6 +47,9 @@ class Engine:
         self.rcvs = []
         self.rcvl = []
 
+        self.snds = []
+        self.sndl = []
+
         self.isSentRequest = []
         self.state = ""
         self.timer = time.time()
@@ -124,21 +127,19 @@ class Engine:
                     elif command == "send_S":
                         [S, receiver] = outputs
                         start = round(time.time() - self.timer, 7)
+                        message = me.Message(message_type="S", payload={'S': S, 'record': self.solver.max_profit})
                         self.state, outputs = self.communicator.send(
                             receiver,
-                            me.Message(
-                                message_type="S",
-                                payload={'S': S, 'record': self.solver.max_profit}
-                            )
+                            message
                         )
                         end = round(time.time() - self.timer, 7)
+                        self.snds.append(end - start)
+                        self.sndl.append(len(str(me.pack(message))))
+
                         self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}",
                                                    command,
                                                    f"subs_am={S}, dest={receiver}")
-                        self.snd_cnt += (end - start) / len(str(me.Message(
-                                message_type="S",
-                                payload={'S': S, 'record': self.solver.max_profit}
-                            )))
+                        self.snd_cnt += (end - start) / len(str(me.pack(message)))
                         self.snd_act += 1
                     elif command == "send_get_request":
                         receiver = outputs[0]
@@ -150,10 +151,13 @@ class Engine:
                             message
                         )
                         end = round(time.time() - self.timer, 7)
+                        self.snds.append(end - start)
+                        self.sndl.append(len(str(me.pack(message))))
+
                         self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}",
                                                    command,
                                                    f"subs_am={outputs[1]}, dest={outputs[0]}")
-                        self.snd_cnt += (end - start) / len(str(message))
+                        self.snd_cnt += (end - start) / len(str(me.pack(message)))
                         self.snd_act += 1
                     elif command == "send_exit_command":
                         receiver = outputs[0]
@@ -164,10 +168,13 @@ class Engine:
                             message
                         )
                         end = round(time.time() - self.timer, 7)
+                        self.snds.append(end - start)
+                        self.sndl.append(len(str(me.pack(message))))
+
                         self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}",
                                                    command,
                                                    f"dest={receiver}")
-                        self.snd_cnt += (end - start) / len(str(message))
+                        self.snd_cnt += (end - start) / len(str(me.pack(message)))
                         self.snd_act += 1
                     elif command == "solve":
                         tasks_am = outputs[0]
@@ -192,10 +199,13 @@ class Engine:
                                 message
                             )
                             end = round(time.time() - self.timer, 7)
+                            self.snds.append(end - start)
+                            self.sndl.append(len(str(me.pack(message))))
+
                             self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}",
                                                        command,
                                                        f"dest={receiver}")
-                            self.snd_cnt += (end - start) / len(str(message))
+                            self.snd_cnt += (end - start) / len(str(me.pack(message)))
                             self.snd_act += 1
                         self.state = "sent_all_exit_command"
                     else:
@@ -216,6 +226,9 @@ class Engine:
                     message
                 )
                 end = round(time.time() - self.timer, 7)
+                self.snds.append(end - start)
+                self.sndl.append(len(str(me.pack(message))))
+
                 self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}", command,
                                            f"subs_am={amount_of_tasks}, dest={receiver}")
                 self.snd_cnt += (end - start) / len(str(message))
@@ -229,6 +242,9 @@ class Engine:
                     message
                 )
                 end = round(time.time() - self.timer, 7)
+                self.snds.append(end - start)
+                self.sndl.append(len(str(me.pack(message))))
+
                 self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}", command,
                                            f"dest={outputs[0]}")
                 self.snd_cnt += (end - start) / len(str(message))
@@ -253,6 +269,9 @@ class Engine:
                         message
                     )
                     end = round(time.time() - self.timer, 7)
+                    self.snds.append(end - start)
+                    self.sndl.append(len(str(me.pack(message))))
+
                     self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}", command,
                                                f"dest={outputs[0]}")
                     self.snd_cnt += (end - start) / len(str(message))
@@ -283,10 +302,14 @@ class Engine:
         # rcv = self.comm.reduce(self.rcv_cnt / self.rcv_act, MPI.SUM, root=0)
         # snd = self.comm.reduce(self.snd_cnt / self.snd_act, MPI.SUM, root=0)
         #
-        # subs_total = self.comm.reduce(self.subs_am, MPI.SUM, root=0)
+        subs_total = self.comm.reduce(self.subs_am, MPI.SUM, root=0)
         #
         # rcvs = self.comm.gather(self.rcvs, root=0)
         # rcvl = self.comm.gather(self.rcvl, root=0)
+
+        snds = self.comm.gather(self.snds, root=0)
+        sndl = self.comm.gather(self.sndl, root=0)
+
         if self.rank == 0:
             # print(f"maximum profit: {profit}")
             # print(f"price_solve={(slv / self.comm.size):.7f},")
@@ -294,23 +317,23 @@ class Engine:
             # print(f"price_receive={(rcv / self.comm.size):.7f},")
             # print(f"price_send={(snd / self.comm.size):.7f}):")
             #
-            # print(f"subs_am={subs_total}")
+            print(f"subs_am={subs_total}")
 
-            # with open("rcvc.txt", "w") as file:
-            #     result1 = []
-            #     for lst in rcvs:
-            #         result1.extend(lst)
-            #     file.write(f"rcvs=np.array( {result1} )\n")
-            #     result1 = []
-            #     for lst in rcvl:
-            #         result1.extend(lst)
-            #     file.write(f"rcvl=np.array( {result1} )")
+            with open("sndc.txt", "w") as file:
+                result1 = []
+                for lst in snds:
+                    result1.extend(lst)
+                file.write(f"snds=np.array( {result1} )\n")
+                result1 = []
+                for lst in sndl:
+                    result1.extend(lst)
+                file.write(f"sndl=np.array( {result1} )")
 
-            max_time = float(self.route_collector.frame['timestamp0'][-1].split('-')[1])
+            # max_time = float(self.route_collector.frame['timestamp0'][-1].split('-')[1])
             # print(f"maximum time    : {max_time}")
-            with open("experiments26.csv", "a") as f:
-                f.write(f'{max_time},{self.T},{self.S},{self.I}\n')
-                f.close()
+            # with open("experiments26.csv", "a") as f:
+            #     f.write(f'{max_time},{self.T},{self.S},{self.I}\n')
+            #     f.close()
         # traces = self.comm.gather(self.route_collector.frame, root=0)
         # if self.rank == 0:
         #     res = {}
@@ -345,6 +368,9 @@ class Engine:
             message=message
         )
         end = round(time.time() - self.timer, 7)
+        self.snds.append(end - start)
+        self.sndl.append(len(str(me.pack(message))))
+
         self.snd_cnt += (end - start) / len(str(message))
         self.snd_act += 1
         return state
@@ -379,6 +405,6 @@ if __name__ == "__main__":
         eng = Engine(proc_amount=size, comm=comm, T=int(t), S=int(s), I=int(i))
         eng.run()
     else:
-        eng = Engine(proc_amount=size, comm=comm, T=1500, S=60, I=26)
+        eng = Engine(proc_amount=size, comm=comm, T=1000, S=60, I=25)
         eng.run()
 

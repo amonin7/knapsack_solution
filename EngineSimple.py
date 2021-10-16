@@ -46,7 +46,7 @@ class Engine:
         if self.rank == 0:
             self.balancer = sb.MasterBalancer("start", max_depth=0, proc_am=self.processes_amount,
                                               prc_blnc=0, arg=self.arg)
-            self.solver = sl.Solver(subproblems=[])
+            self.solver = sl.Solver(subproblems=[], I=24)
             root = sl.Node(0, self.solver.arr[0].value, 0, self.solver.arr[0].weight)
             root.bound = self.solver.bound(root)
             self.solver.putSubproblems([root])
@@ -55,7 +55,7 @@ class Engine:
         else:
             self.balancer = sb.SlaveBalancer("start", max_depth=0, proc_am=self.processes_amount,
                                              prc_blnc=0, arg=self.arg)
-            self.solver = sl.Solver(subproblems=[])
+            self.solver = sl.Solver(subproblems=[], I=24)
 
             self.communicator = com.SimpleCommunicator(self.comm)
         self.timer = time.time()
@@ -140,7 +140,7 @@ class Engine:
         # rcv = self.comm.reduce(self.rcv_cnt / self.rcv_act, MPI.SUM, root=0)
         # snd = self.comm.reduce(self.snd_cnt / self.snd_act, MPI.SUM, root=0)
         #
-        # subs_total = self.comm.reduce(self.subs_am, MPI.SUM, root=0)
+        subs_total = self.comm.reduce(self.subs_am, MPI.SUM, root=0)
         m_time = self.comm.reduce(
             float(self.route_collector.frame[f'timestamp{self.rank}'][-1].split('-')[1]),
             MPI.MAX,
@@ -153,13 +153,13 @@ class Engine:
             # print(f"price_receive={(rcv / self.comm.size):.7f},")
             # print(f"price_send={(snd / self.comm.size):.7f}):")
             #
-            # print(f"subs_am={subs_total}")
+            print(f"subs_am={subs_total}")
             #
             # max_time = float(self.route_collector.frame['timestamp0'][-1].split('-')[1])
             # print(f"maximum time    : {max_time}")
             with open('argtime.csv', 'a') as f:
                 f.write(f'\n{m_time},{self.arg}')
-            # print(m_time)
+            print(m_time)
         traces = self.comm.gather(self.route_collector.frame, root=0)
         if self.rank == 0:
             res = {}
