@@ -113,7 +113,7 @@ class Engine:
                 else:
                     break
             elif command == "send_all":
-                self.state = self.send_all_subs_to_all_proc()
+                self.state = self.send_all_subs_to_all_proc_rr()
             elif command == "solve":
                 tasks_am = outputs[0]
                 start = round(time.time() - self.timer, 8)
@@ -157,7 +157,7 @@ class Engine:
             #
             # max_time = float(self.route_collector.frame['timestamp0'][-1].split('-')[1])
             # print(f"maximum time    : {max_time}")
-            with open('argtime-rr.csv', 'a') as f:
+            with open('argtime-rr-big-values.csv', 'a') as f:
                 f.write(f'\n{m_time},{self.arg}')
             print(m_time)
         traces = self.comm.gather(self.route_collector.frame, root=0)

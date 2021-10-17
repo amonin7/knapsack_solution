@@ -66,31 +66,24 @@ class Engine:
         while True:
             state = self.state
             if state != "receiving":
-                start = round(time.time() - self.timer, 8)
-                command, outputs = self.balancer.balance(state=state,
-                                                         subs_amount=self.solver.get_sub_amount(),
-                                                         add_args=[[], self.isSentRequest, self.rank])
-                end = round(time.time() - self.timer, 8)
-                self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7):.7f}", "balance",
-                                           f"state={self.state}")
-                self.blc_cnt += end - start
-                self.blc_act += 1
+                command, outputs = self.balance([[], self.isSentRequest, self.rank], state)
             else:
                 command = "receive"
+                outputs = []
             if command == "receive":
-                message, receive_status = self.receive_message()
+                message, receive_status, sender = self.receive_message()
                 if receive_status != "received_exit_command":
                     if receive_status == "received_subproblems":
                         self.solver.putSubproblems(message.payload['problems'])
                         if self.solver.max_profit > message.payload['record']:
                             self.solver.max_profit = message.payload['record']
 
-                    command, outputs = self.balance(message, receive_status)
+                    command, outputs = self.balance([[message.payload, sender], False, self.rank], receive_status)
                     if command == "send_subs":
                         pass
                     elif command == "send_exit_command":
                         receiver = outputs[0]
-                        outputs = self.send_exit(command, receiver)
+                        outputs = self.send_exit_command(receiver)
                     elif command == "receive":
                         self.state = "receiving"
                     elif command == "send_subproblems":
@@ -102,34 +95,31 @@ class Engine:
                                                    f"subs_am={outputs[1]}, dest={outputs[0]}")
                     elif command == "solve":
                         tasks_am = outputs[0]
-                        start = round(time.time() - self.timer, 8)
-                        self.state, solved_amount = self.solver.solve(tasks_am)
-                        self.subs_am += solved_amount
-                        end = round(time.time() - self.timer, 8)
-                        self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}",
-                                                   command,
-                                                   f"tasks_am={tasks_am}")
-                        self.slv_cnt += (end - start) / solved_amount
-                        self.slv_act += 1
+                        self.solve(tasks_am)
+                    elif command == "send_get_request":
+                        receiver = outputs[0]
+                        amount_of_tasks = outputs[1]
+                        outputs = self.send_get_request(amount_of_tasks, receiver)
+                    else:
+                        raise Exception(f"wrong command={command}")
                 else:
                     break
             elif command == "send_all":
                 self.state = self.send_all_subs_to_all_proc()
             elif command == "solve":
                 tasks_am = outputs[0]
-                start = round(time.time() - self.timer, 8)
-                self.state, solved_amount = self.solver.solve(tasks_am)
-                self.subs_am += solved_amount
-                end = round(time.time() - self.timer, 8)
-                self.route_collector.write(self.rank, f"{start:.7f}-{end}", command,
-                                           f"tasks_am={tasks_am}")
-                self.slv_cnt += (end - start) / solved_amount
-                self.slv_act += 1
+                self.solve(tasks_am)
+            elif command == "send_get_request":
+                receiver = outputs[0]
+                amount_of_tasks = outputs[1]
+                outputs = self.send_get_request(amount_of_tasks, receiver)
             elif command == "exit":
                 start = round(time.time() - self.timer, 7)
                 self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}", command,
                                            "")
                 break
+            else:
+                raise Exception(f"wrong command={command}")
         # if self.slv_act == 0: self.slv_act = 1
         # if self.blc_act == 0: self.blc_act = 1
         # if self.rcv_act == 0: self.rcv_act = 1
@@ -170,7 +160,31 @@ class Engine:
             self.route_collector.save()
         # self.comm_collector.save()
 
-    def send_exit(self, command, receiver):
+    def send_get_request(self, amount_of_tasks, receiver):
+        start = round(time.time() - self.timer, 7)
+        message = me.Message(message_type="get_request", payload=amount_of_tasks)
+        self.state, outputs = self.communicator.send(
+            receiver,
+            message
+        )
+        end = round(time.time() - self.timer, 7)
+        self.route_collector.write(self.rank, f"{start:.7f}-{end:.7f}",
+                                   "send_get_request",
+                                   f"subs_am={amount_of_tasks}, dest={receiver}")
+        return outputs
+
+    def solve(self, tasks_am):
+        start = round(time.time() - self.timer, 8)
+        self.state, solved_amount = self.solver.solve(tasks_am)
+        self.subs_am += solved_amount
+        end = round(time.time() - self.timer, 8)
+        self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}",
+                                   "solve",
+                                   f"tasks_am={tasks_am}")
+        self.slv_cnt += (end - start) / solved_amount
+        self.slv_act += 1
+
+    def send_exit_command(self, receiver):
         start = round(time.time() - self.timer, 7)
         message = me.Message(message_type="exit_command")
         self.state, outputs = self.communicator.send(
@@ -179,7 +193,7 @@ class Engine:
         )
         end = round(time.time() - self.timer, 7)
         self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}",
-                                   command,
+                                   "send_exit_command",
                                    f"dest={receiver}")
         self.snd_cnt += (end - start) / len(str(me.pack(message)))
         self.snd_act += 1
@@ -205,7 +219,7 @@ class Engine:
                                    f"mes_type={message.message_type}")
         self.rcv_cnt += (end - start) / len(str(message))
         self.rcv_act += 1
-        return message, receive_status
+        return message, receive_status, sender
 
     def send_all_subs_to_all_proc(self):
         probs = self.solver.getSubproblems(-1)
