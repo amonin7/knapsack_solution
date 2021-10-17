@@ -69,26 +69,24 @@ def find_best_arg_range():
         bashCommand = f'mpiexec --hostfile hostfile -n 10 python EngineSimple.py {i}'
         process = subprocess.Popen(bashCommand.split())
         output, error = process.communicate()
-        # if i // 3 <= 2:
-        #     print(f'[*] step with arg={i} is done')
-        #     continue
-        #
-        # with open('argtime.csv', 'r') as f:
-        #     text = f.read().split('\n')
-        #     line = text[-1]
-        #     time, arg = line.split(',')
-        #     time1 = float(time)
-        #
-        #     line = text[-2]
-        #     time, arg = line.split(',')
-        #     time0 = float(time)
-        #
-        #     if time1 >= time0:
-        #         line = text[-3]
-        #         time, arg = line.split(',')
-        #         time_1 = float(time)
-        #         if time0 >= time_1:
-        #             break
+        print(f'[*] step with arg={i} is done')
+
+
+def find_best_arg_list_sch():
+    for i in range(10, 101, 10):
+        bashCommand = f'mpiexec --hostfile hostfile -n 10 python EngineSecond.py {i}'
+        process = subprocess.Popen(bashCommand.split())
+        output, error = process.communicate()
+        print(f'[*] step with arg={i} is done')
+    for i in range(200, 1001, 100):
+        bashCommand = f'mpiexec --hostfile hostfile -n 10 python EngineSecond.py {i}'
+        process = subprocess.Popen(bashCommand.split())
+        output, error = process.communicate()
+        print(f'[*] step with arg={i} is done')
+    for i in range(1500, 10001, 500):
+        bashCommand = f'mpiexec --hostfile hostfile -n 10 python EngineSecond.py {i}'
+        process = subprocess.Popen(bashCommand.split())
+        output, error = process.communicate()
         print(f'[*] step with arg={i} is done')
 
 

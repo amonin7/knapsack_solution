@@ -131,7 +131,7 @@ class Engine:
         # rcv = self.comm.reduce(self.rcv_cnt / self.rcv_act, MPI.SUM, root=0)
         # snd = self.comm.reduce(self.snd_cnt / self.snd_act, MPI.SUM, root=0)
         #
-        subs_total = self.comm.reduce(self.subs_am, MPI.SUM, root=0)
+        # subs_total = self.comm.reduce(self.subs_am, MPI.SUM, root=0)
         m_time = self.comm.reduce(
             float(self.route_collector.frame[f'timestamp{self.rank}'][-1].split('-')[1]),
             MPI.MAX,
@@ -144,20 +144,20 @@ class Engine:
             # print(f"price_receive={(rcv / self.comm.size):.7f},")
             # print(f"price_send={(snd / self.comm.size):.7f}):")
             #
-            print(f"subs_am={subs_total}")
+            # print(f"subs_am={subs_total}")
             #
             # max_time = float(self.route_collector.frame['timestamp0'][-1].split('-')[1])
             # print(f"maximum time    : {max_time}")
-            with open('argtime-rr.csv', 'a') as f:
                 f.write(f'\n{m_time},{self.arg}')
-            print(m_time)
-        traces = self.comm.gather(self.route_collector.frame, root=0)
-        if self.rank == 0:
-            res = {}
-            for d in traces:
-                res.update(d)
-            self.route_collector.frame = res
-            self.route_collector.save()
+            # print(m_time)
+        # traces = self.comm.gather(self.route_collector.frame, root=0)
+        # if self.rank == 0:
+        #     res = {}
+        #     for d in traces:
+        #         res.update(d)
+        #     self.route_collector.frame = res
+        #     self.route_collector.save()
+
         # self.comm_collector.save()
 
     def send_get_request(self, amount_of_tasks, receiver):
