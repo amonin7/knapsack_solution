@@ -157,7 +157,7 @@ class Engine:
             #
             # max_time = float(self.route_collector.frame['timestamp0'][-1].split('-')[1])
             # print(f"maximum time    : {max_time}")
-            with open('argtime.csv', 'a') as f:
+            with open('argtime-rr.csv', 'a') as f:
                 f.write(f'\n{m_time},{self.arg}')
             print(m_time)
         traces = self.comm.gather(self.route_collector.frame, root=0)
@@ -191,6 +191,44 @@ class Engine:
             end = round(time.time() - self.timer, 7)
             self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}",
                                        "send_subproblems", f"subs_am={len(message_list)}, dest={dest_proc}")
+            self.snd_cnt += (end - start) / len(str(message))
+            self.snd_act += 1
+        return state
+
+    def send_all_subs_to_all_proc_rr(self):
+        probs = self.solver.getSubproblems(-1)
+        probs_amnt = len(probs)
+        subs_to_send = {x: [] for x in range(self.processes_amount)}
+        subs_to_send.pop(self.rank)
+
+        state = ""
+        cnt = 0
+        while cnt < probs_amnt:
+            index = cnt % self.processes_amount
+            if index == self.rank:
+                cnt += 1
+                continue
+            subs_to_send[index].append(probs[cnt])
+            cnt += 1
+
+        for dest_proc in range(0, self.processes_amount):
+            if dest_proc == self.rank:
+                continue
+            message = me.Message(
+                message_type="subproblems",
+                payload={
+                    'problems': subs_to_send[dest_proc],
+                    'record': self.solver.max_profit
+                }
+            )
+            start = round(time.time() - self.timer, 7)
+            state, outputs = self.communicator.send(
+                receiver=dest_proc,
+                message=message
+            )
+            end = round(time.time() - self.timer, 7)
+            self.route_collector.write(self.rank, f"{start:.7f}-{round(time.time() - self.timer, 7)}",
+                                       "send_subproblems", f"subs_am={len(subs_to_send[dest_proc])}, dest={dest_proc}")
             self.snd_cnt += (end - start) / len(str(message))
             self.snd_act += 1
         return state

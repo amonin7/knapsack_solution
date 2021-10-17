@@ -65,7 +65,7 @@ def find_best_arg():
 
 
 def find_best_arg_range():
-    for i in range(1, 150, 2):
+    for i in range(40, 150, 3):
         bashCommand = f'mpiexec --hostfile hostfile -n 10 python EngineSimple.py {i}'
         process = subprocess.Popen(bashCommand.split())
         output, error = process.communicate()
