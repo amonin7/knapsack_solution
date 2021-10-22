@@ -57,7 +57,7 @@ class Engine:
     # TODO: вынести в отдельный метод вне ENGINE
     def initializeAll(self) -> None:
         if self.rank == 0:
-            self.balancer = sb.MasterBalancer("start", max_depth=0, proc_am=self.processes_amount,
+            self.balancer = sb.MasterBalancer(max_depth=0, proc_am=self.processes_amount,
                                               prc_blnc=0, T=self.T, S=self.S)
             self.solver = sl.Solver(subproblems=[], I=self.I)
             root = sl.Node(0, self.solver.arr[0].value, 0, self.solver.arr[0].weight)
@@ -66,7 +66,7 @@ class Engine:
 
             self.communicator = com.SimpleCommunicator(comm=comm)
         else:
-            self.balancer = sb.SlaveBalancer("start", max_depth=0, proc_am=self.processes_amount,
+            self.balancer = sb.SlaveBalancer(max_depth=0, proc_am=self.processes_amount,
                                              prc_blnc=0, T=self.T, S=self.S)
             self.solver = sl.Solver(subproblems=[], I=self.I)
 
