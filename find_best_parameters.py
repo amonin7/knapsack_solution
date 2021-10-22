@@ -137,4 +137,5 @@ if __name__ == "__main__":
     # sort_values()
     # make_experiment()
     # find_best_arg()
-    find_best_arg_range()
+    # find_best_arg_range()
+    find_best_arg_list_sch()
