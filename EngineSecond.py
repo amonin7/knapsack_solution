@@ -164,7 +164,8 @@ class Engine:
     def send_get_request(self, amount_of_tasks, receiver):
         start = round(time.time() - self.timer, 7)
         message = me.Message(message_type="get_request", payload=amount_of_tasks)
-        self.state, outputs = self.communicator.send(
+        outputs = []
+                        self.state = self.communicator.send(
             receiver,
             message
         )
@@ -188,7 +189,8 @@ class Engine:
     def send_exit_command(self, receiver):
         start = round(time.time() - self.timer, 7)
         message = me.Message(message_type="exit_command")
-        self.state, outputs = self.communicator.send(
+        outputs = []
+                        self.state = self.communicator.send(
             receiver,
             message
         )

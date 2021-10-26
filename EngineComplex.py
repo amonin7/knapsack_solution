@@ -128,7 +128,8 @@ class Engine:
                         [S, receiver] = outputs
                         start = round(time.time() - self.timer, 7)
                         message = me.Message(message_type="S", payload={'S': S, 'record': self.solver.max_profit})
-                        self.state, outputs = self.communicator.send(
+                        outputs = []
+                        self.state = self.communicator.send(
                             receiver,
                             message
                         )
@@ -146,7 +147,8 @@ class Engine:
                         amount_of_tasks = outputs[1]
                         start = round(time.time() - self.timer, 7)
                         message = me.Message(message_type="get_request", payload=amount_of_tasks)
-                        self.state, outputs = self.communicator.send(
+                        outputs = []
+                        self.state = self.communicator.send(
                             receiver,
                             message
                         )
@@ -163,7 +165,8 @@ class Engine:
                         receiver = outputs[0]
                         start = round(time.time() - self.timer, 7)
                         message = me.Message(message_type="exit_command")
-                        self.state, outputs = self.communicator.send(
+                        outputs = []
+                        self.state = self.communicator.send(
                             receiver,
                             message
                         )
@@ -221,7 +224,8 @@ class Engine:
                 amount_of_tasks = outputs[1]
                 start = round(time.time() - self.timer, 7)
                 message = me.Message(message_type="get_request", payload=amount_of_tasks)
-                self.state, outputs = self.communicator.send(
+                outputs = []
+                self.state = self.communicator.send(
                     receiver,
                     message
                 )
@@ -237,7 +241,8 @@ class Engine:
                 receiver = outputs[0]
                 start = round(time.time() - self.timer, 7)
                 message = me.Message(message_type="exit_command")
-                self.state, outputs = self.communicator.send(
+                outputs = []
+                self.state = self.communicator.send(
                     receiver,
                     message
                 )
@@ -264,7 +269,8 @@ class Engine:
                     (receiver, get_amount) = outputs[0].get()
                     start = round(time.time() - self.timer, 7)
                     message = me.Message(message_type="exit_command")
-                    self.state, outputs = self.communicator.send(
+                    outputs = []
+                    self.state = self.communicator.send(
                         receiver,
                         message
                     )
