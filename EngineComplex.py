@@ -1,6 +1,6 @@
 import balancer.ComplexBalancer as sb
 from mpi4py import MPI
-import sequential.main as sl
+import sequential.Solver as sl
 import communicator.SimpleCommunicator as com
 import time
 import route.TraceCollector as rc

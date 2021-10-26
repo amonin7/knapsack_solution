@@ -1,7 +1,7 @@
 import time
 from mpi4py import MPI
 import balancer.SecondBalancer as sb
-import sequential.main as sl
+import sequential.Solver as sl
 import communicator.SimpleCommunicator as com
 import communicator.Message as me
 import route.TraceCollector as rc
@@ -148,7 +148,7 @@ class Engine:
             #
             # max_time = float(self.route_collector.frame['timestamp0'][-1].split('-')[1])
             # print(f"maximum time    : {max_time}")
-            with open('argtime-ls.csv', 'a') as f:
+            with open('experimental_data/argtime-ls.csv', 'a') as f:
                 f.write(f'\n{m_time},{self.arg}')
             # print(m_time)
         # traces = self.comm.gather(self.route_collector.frame, root=0)

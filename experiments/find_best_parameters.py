@@ -47,7 +47,7 @@ def find_best_arg():
         process = subprocess.Popen(bashCommand.split())
         output, error = process.communicate()
 
-        with open('argtime.csv', 'r') as f:
+        with open('../experimental_data/argtime.csv', 'r') as f:
             line = f.read().split('\n')[-1]
             time, arg = line.split(',')
             time1 = float(time)

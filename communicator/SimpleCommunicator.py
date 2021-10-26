@@ -1,3 +1,5 @@
+from typing import Tuple
+
 import communicator.Message as me
 from mpi4py import MPI
 
@@ -7,11 +9,12 @@ class SimpleCommunicator:
     def __init__(self, comm):
         self.comm = comm
 
-    def send(self, receiver, message: me.Message):
+    # TODO: make method return only the string
+    def send(self, receiver, message: me.Message) -> str:
         self.comm.send(me.pack(message), dest=receiver)
         return "sent_" + message.message_type, []
 
-    def receive(self):
+    def receive(self) -> Tuple[str, me.Message, int]:
         status = MPI.Status()
         message_dict = self.comm.recv(source=MPI.ANY_SOURCE, tag=MPI.ANY_TAG, status=status)
         message = me.unpack(message_dict)

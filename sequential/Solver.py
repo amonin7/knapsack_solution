@@ -45,7 +45,7 @@ class Node:
         self.weight = w
 
 
-def nodeToDict(v: Node) -> dict:
+def node_to_dict(v: Node) -> dict:
     return {
         "level": v.level,
         "profit": v.profit,
@@ -54,7 +54,7 @@ def nodeToDict(v: Node) -> dict:
     }
 
 
-def dictToNode(d: dict) -> Node:
+def dict_to_node(d: dict) -> Node:
     return Node(d['level'], d['profit'], d['bound'], d['weight'])
 
 
@@ -177,7 +177,7 @@ class Solver:
         if v_out.bound > self.max_profit:
             self.tasks_q.put(v_out)
 
-    def solve(self, n):
+    def solve(self, n: int):
         cnt = 0
         if n > 0:
             while n > 0 and not self.tasks_q.empty():

@@ -1,4 +1,4 @@
-import sequential.main as ma
+import sequential.Solver as ma
 
 
 class Message:
@@ -20,7 +20,7 @@ def pack(m: Message):
         # ex. payload = {'problems': [Node(0,0,0,0), Node(1,0,0,0), Node(2,0,0,0)], 'record': 345}
         problems = list()
         for node in m.payload['problems']:
-            problems.append(ma.nodeToDict(node))
+            problems.append(ma.node_to_dict(node))
         return {
             "message_type": m.message_type,
             "payload": {
@@ -48,7 +48,7 @@ def unpack(d: dict) -> Message:
     elif d["message_type"] == "subproblems":
         problems = list()
         for node_dict in d["payload"]['problems']:
-            problems.append(ma.dictToNode(node_dict))
+            problems.append(ma.dict_to_node(node_dict))
         return Message(d["message_type"], {'problems': problems, 'record': d["payload"]['record']})
     elif d["message_type"] == "exit_command":
         return Message(d["message_type"])
