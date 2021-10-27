@@ -90,6 +90,7 @@ class Engine:
                 self.blc_act += 1
             else:
                 command = "receive"
+                outputs = []
             if command == "receive":
                 start = round(time.time() - self.timer, 7)
                 receive_status, message, sender = self.communicator.receive()
