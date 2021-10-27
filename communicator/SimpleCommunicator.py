@@ -12,7 +12,7 @@ class SimpleCommunicator:
     # TODO: make method return only the string
     def send(self, receiver, message: me.Message) -> str:
         self.comm.send(me.pack(message), dest=receiver)
-        return "sent_" + message.message_type, []
+        return "sent_" + message.message_type
 
     def receive(self) -> Tuple[str, me.Message, int]:
         status = MPI.Status()

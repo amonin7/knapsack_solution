@@ -197,7 +197,7 @@ class Engine:
                             (receiver, get_amount) = outputs[0].get()
                             start = round(time.time() - self.timer, 7)
                             message = me.Message(message_type="exit_command")
-                            self.state, _ = self.communicator.send(
+                            self.state = self.communicator.send(
                                 receiver,
                                 message
                             )
@@ -369,7 +369,8 @@ class Engine:
             payload={'problems': self.solver.getSubproblems(subs_am), 'record': self.solver.max_profit}
         )
         start = round(time.time() - self.timer, 7)
-        state, outputs = self.communicator.send(
+        outputs = []
+        state = self.communicator.send(
             receiver=dest,
             message=message
         )
@@ -392,7 +393,8 @@ class Engine:
                 message_type="subproblems",
                 payload=message_list
             )
-            state, outputs = self.communicator.send(
+            outputs = []
+            state = self.communicator.send(
                 receiver=dest_proc,
                 message=message
             )

@@ -184,7 +184,8 @@ class Engine:
                 }
             )
             start = round(time.time() - self.timer, 7)
-            state, outputs = self.communicator.send(
+            outputs = []
+            state = self.communicator.send(
                 receiver=dest_proc,
                 message=message
             )
@@ -222,7 +223,8 @@ class Engine:
                 }
             )
             start = round(time.time() - self.timer, 7)
-            state, outputs = self.communicator.send(
+            outputs = []
+            state = self.communicator.send(
                 receiver=dest_proc,
                 message=message
             )
