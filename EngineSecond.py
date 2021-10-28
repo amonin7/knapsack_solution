@@ -311,7 +311,7 @@ if __name__ == "__main__":
         eng.run()
     elif len(sys.argv) == 3:
         _, arg, i = sys.argv
-        eng = Engine(proc_amount=size, comm=comm, arg=int(arg), I=i)
+        eng = Engine(proc_amount=size, comm=comm, arg=int(arg), I=int(i))
         eng.run()
     else:
         eng = Engine(proc_amount=size, comm=comm)
