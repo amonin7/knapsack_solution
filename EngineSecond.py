@@ -13,10 +13,12 @@ class Engine:
     def __init__(self,
                  proc_amount,
                  comm,
+                 I=24,
                  arg=7):
         self.comm = comm
         self.rank = comm.Get_rank()
         self.arg = arg
+        self.I = I
         self.processes_amount = proc_amount  # amount of simulated processes
         self.route_collector = rc.TraceCollector('TraceS.csv', self.rank)
 
@@ -46,7 +48,7 @@ class Engine:
         if self.rank == 0:
             self.balancer = sb.MasterBalancer(max_depth=0, proc_am=self.processes_amount,
                                               prc_blnc=0, arg=self.arg)
-            self.solver = sl.Solver(subproblems=[], I=24)
+            self.solver = sl.Solver(subproblems=[], I=self.I)
             root = sl.Node(0, self.solver.arr[0].value, 0, self.solver.arr[0].weight)
             root.bound = self.solver.bound(root)
             self.solver.putSubproblems([root])
@@ -55,7 +57,7 @@ class Engine:
         else:
             self.balancer = sb.SlaveBalancer(max_depth=0, proc_am=self.processes_amount,
                                              prc_blnc=0, arg=self.arg)
-            self.solver = sl.Solver(subproblems=[], I=24)
+            self.solver = sl.Solver(subproblems=[], I=self.I)
 
             self.communicator = com.SimpleCommunicator(self.comm)
         self.timer = time.time()
@@ -148,8 +150,8 @@ class Engine:
             #
             # max_time = float(self.route_collector.frame['timestamp0'][-1].split('-')[1])
             # print(f"maximum time    : {max_time}")
-            with open('experimental_data/argtime-ls.csv', 'a') as f:
-                f.write(f'\n{m_time},{self.arg}')
+            with open('experimental_data/argtime-ls-all.csv', 'a') as f:
+                f.write(f'\n{m_time},{self.arg},{self.I}')
             # print(m_time)
         # traces = self.comm.gather(self.route_collector.frame, root=0)
         # if self.rank == 0:
@@ -306,6 +308,10 @@ if __name__ == "__main__":
     if len(sys.argv) == 2:
         _, arg = sys.argv
         eng = Engine(proc_amount=size, comm=comm, arg=int(arg))
+        eng.run()
+    elif len(sys.argv) == 3:
+        _, arg, i = sys.argv
+        eng = Engine(proc_amount=size, comm=comm, arg=int(arg), I=i)
         eng.run()
     else:
         eng = Engine(proc_amount=size, comm=comm)
