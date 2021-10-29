@@ -122,18 +122,18 @@ class Engine:
                 break
             else:
                 raise Exception(f"wrong command={command}")
-        # if self.slv_act == 0: self.slv_act = 1
-        # if self.blc_act == 0: self.blc_act = 1
+        if self.slv_act == 0: self.slv_act = 1
+        if self.blc_act == 0: self.blc_act = 1
         # if self.rcv_act == 0: self.rcv_act = 1
         # if self.snd_act == 0: self.snd_act = 1
         #
         # profit = self.comm.reduce(self.solver.max_profit, MPI.MAX, root=0)
-        # slv = self.comm.reduce(self.slv_cnt / self.slv_act, MPI.SUM, root=0)
-        # blc = self.comm.reduce(self.blc_cnt / self.blc_act, MPI.SUM, root=0)
+        slv = self.comm.reduce(self.slv_cnt / self.slv_act, MPI.SUM, root=0)
+        blc = self.comm.reduce(self.blc_cnt / self.blc_act, MPI.SUM, root=0)
         # rcv = self.comm.reduce(self.rcv_cnt / self.rcv_act, MPI.SUM, root=0)
         # snd = self.comm.reduce(self.snd_cnt / self.snd_act, MPI.SUM, root=0)
         #
-        # subs_total = self.comm.reduce(self.subs_am, MPI.SUM, root=0)
+        subs_total = self.comm.reduce(self.subs_am, MPI.SUM, root=0)
         m_time = self.comm.reduce(
             float(self.route_collector.frame[f'timestamp{self.rank}'][-1].split('-')[1]),
             MPI.MAX,
@@ -141,12 +141,12 @@ class Engine:
         )
         if self.rank == 0:
             # print(f"maximum profit: {profit}")
-            # print(f"price_solve={(slv / self.comm.size):.7f},")
-            # print(f"price_balance={(blc / self.comm.size):.7f},")
+            print(f"price_solve={(slv / self.comm.size):.7f},")
+            print(f"price_balance={(blc / self.comm.size):.7f},")
             # print(f"price_receive={(rcv / self.comm.size):.7f},")
             # print(f"price_send={(snd / self.comm.size):.7f}):")
             #
-            # print(f"subs_am={subs_total}")
+            print(f"subs_am={subs_total}")
             #
             # max_time = float(self.route_collector.frame['timestamp0'][-1].split('-')[1])
             # print(f"maximum time    : {max_time}")
