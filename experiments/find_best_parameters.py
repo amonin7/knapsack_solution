@@ -103,7 +103,7 @@ def find_best_arg_second_bal():
     #     process = subprocess.Popen(bashCommand.split())
     #     output, error = process.communicate()
     #     print(f'[*] step with arg={i} is done')
-    for i in range(160, 441, 2):
+    for i in range(2, 441, 3):
         bashCommand = f'mpiexec -n 8 python EngineSecond.py {i} {items}'
         process = subprocess.Popen(bashCommand.split())
         output, error = process.communicate()
