@@ -91,17 +91,23 @@ def find_best_arg_list_sch():
 
 
 def find_best_arg_second_bal():
-    for items in [24, 26, 28]:
-        for i in range(2, 99, 2):
-            bashCommand = f'mpiexec -n 8 python EngineSecond.py {i} {items}'
-            process = subprocess.Popen(bashCommand.split())
-            output, error = process.communicate()
-            print(f'[*] step with arg={i} is done')
-        for i in range(100, 179, 3):
-            bashCommand = f'mpiexec -n 8 python EngineSecond.py {i} {items}'
-            process = subprocess.Popen(bashCommand.split())
-            output, error = process.communicate()
-            print(f'[*] step with arg={i} is done')
+    # for items in [24, 26, 28]:
+    items = 26
+    # for i in range(2, 99, 2):
+    #     bashCommand = f'mpiexec -n 8 python EngineSecond.py {i} {items}'
+    #     process = subprocess.Popen(bashCommand.split())
+    #     output, error = process.communicate()
+    #     print(f'[*] step with arg={i} is done')
+    # for i in range(100, 179, 3):
+    #     bashCommand = f'mpiexec -n 8 python EngineSecond.py {i} {items}'
+    #     process = subprocess.Popen(bashCommand.split())
+    #     output, error = process.communicate()
+    #     print(f'[*] step with arg={i} is done')
+    for i in range(180, 321, 2):
+        bashCommand = f'mpiexec -n 8 python EngineSecond.py {i} {items}'
+        process = subprocess.Popen(bashCommand.split())
+        output, error = process.communicate()
+        print(f'[*] step with arg={i} is done')
 
 
 def sort_values():
