@@ -110,6 +110,15 @@ def find_best_arg_second_bal():
         print(f'[*] step with arg={i} is done')
 
 
+def save_traces():
+    items = 24
+    for i in [50, 150, 400]:
+        bash_command = f'mpiexec --hostfile hostfile -n 8 python EngineSecond.py {i} {items}'
+        process = subprocess.Popen(bash_command.split())
+        output, error = process.communicate()
+        print(f'[*] step with arg={i} is done')
+
+
 def sort_values():
     exp = []
     with open('experiments26.csv', 'r') as f:
@@ -159,4 +168,5 @@ if __name__ == "__main__":
     # find_best_arg()
     # find_best_arg_range()
     # find_best_arg_list_sch()
-    find_best_arg_second_bal()
+    # find_best_arg_second_bal()
+    save_traces()
