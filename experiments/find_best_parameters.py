@@ -103,8 +103,8 @@ def find_best_arg_second_bal():
     #     process = subprocess.Popen(bashCommand.split())
     #     output, error = process.communicate()
     #     print(f'[*] step with arg={i} is done')
-    for i in range(2, 441, 3):
-        bashCommand = f'mpiexec -n 8 python EngineSecond.py {i} {items}'
+    for i in range(1, 200, 2):
+        bashCommand = f'mpiexec -n 8 python3 EngineSecond.py {i} {items}'
         process = subprocess.Popen(bashCommand.split())
         output, error = process.communicate()
         print(f'[*] step with arg={i} is done')
@@ -168,5 +168,5 @@ if __name__ == "__main__":
     # find_best_arg()
     # find_best_arg_range()
     # find_best_arg_list_sch()
-    # find_best_arg_second_bal()
-    save_traces()
+    find_best_arg_second_bal()
+    # save_traces()
