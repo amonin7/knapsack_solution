@@ -153,13 +153,13 @@ class Engine:
             with open('experimental_data/argtime-ls-26-small.csv', 'a') as f:
                 f.write(f'\n{m_time},{self.arg},{self.I}')
             print(m_time)
-        # traces = self.comm.gather(self.route_collector.frame, root=0)
-        # if self.rank == 0:
-        #     res = {}
-        #     for d in traces:
-        #         res.update(d)
-        #     self.route_collector.frame = res
-        #     self.route_collector.save()
+        traces = self.comm.gather(self.route_collector.frame, root=0)
+        if self.rank == 0:
+            res = {}
+            for d in traces:
+                res.update(d)
+            self.route_collector.frame = res
+            self.route_collector.save()
 
         # self.comm_collector.save()
 

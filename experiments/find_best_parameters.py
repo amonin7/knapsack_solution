@@ -112,7 +112,7 @@ def find_best_arg_second_bal():
 
 def save_traces():
     items = 26
-    for i in [50, 150, 400]:
+    for i in [1, 500, 5000]:
         bash_command = f'mpiexec -n 8 python3 EngineSecond.py {i} {items}'
         process = subprocess.Popen(bash_command.split())
         output, error = process.communicate()
