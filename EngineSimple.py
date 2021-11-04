@@ -167,7 +167,6 @@ class Engine:
                 res.update(d)
             self.route_collector.frame = res
             self.route_collector.save()
-        # self.comm_collector.save()
 
     def send_all_subs_to_all_proc(self):
         probs = self.solver.getSubproblems(-1)

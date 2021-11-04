@@ -161,7 +161,6 @@ class Engine:
             self.route_collector.frame = res
             self.route_collector.save()
 
-        # self.comm_collector.save()
 
     def send_get_request(self, amount_of_tasks, receiver):
         start = round(time.time() - self.timer, 7)

@@ -349,7 +349,6 @@ class Engine:
         #     self.route_collector.frame = res
         #     self.route_collector.save()
 
-        # self.comm_collector.save()
 
     def send_subproblems(self, sender, amount):
         start = round(time.time() - self.timer, 7)
