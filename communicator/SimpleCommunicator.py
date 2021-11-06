@@ -9,7 +9,6 @@ class SimpleCommunicator:
     def __init__(self, comm):
         self.comm = comm
 
-    # TODO: make method return only the string
     def send(self, receiver, message: me.Message) -> str:
         self.comm.send(me.pack(message), dest=receiver)
         return "sent_" + message.message_type
