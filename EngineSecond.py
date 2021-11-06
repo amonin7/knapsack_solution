@@ -44,7 +44,7 @@ class Engine:
         self.subs_am = 0
 
     # TODO: вынести в отдельный метод вне ENGINE
-    def initializeAll(self) -> None:
+    def initialize_all(self) -> None:
         if self.rank == 0:
             self.balancer = sb.MasterBalancer(max_depth=0, proc_am=self.processes_amount,
                                               prc_blnc=0, arg=self.arg)
@@ -64,7 +64,7 @@ class Engine:
         self.state = "starting"
 
     def run(self) -> None:
-        self.initializeAll()
+        self.initialize_all()
         while True:
             state = self.state
             if state != "receiving":
@@ -160,7 +160,6 @@ class Engine:
                 res.update(d)
             self.route_collector.frame = res
             self.route_collector.save()
-
 
     def send_get_request(self, amount_of_tasks, receiver):
         start = round(time.time() - self.timer, 7)
