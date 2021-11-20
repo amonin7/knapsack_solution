@@ -19,7 +19,7 @@ class Engine:
         self.rank = comm.Get_rank()
         self.arg = arg
         self.I = I
-        self.processes_amount = proc_amount  # amount of simulated processes
+        self.processes_amount = proc_amount
         self.route_collector = rc.TraceCollector(f'Trace{self.arg}.csv', self.rank)
 
         # self.comm_collector = cc.CommunicationCollector('Communication.csv')
